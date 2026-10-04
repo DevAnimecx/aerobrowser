@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  unit:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - run: cargo fmt --check
+      - run: cargo test --locked
+      - run: cargo build --release --locked
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: cargo build --locked
+      - run: npx --yes playwright install --with-deps chromium
+      - name: Real browser integration
+        shell: bash
+        env:
+          AERO_TOKEN: ci-fixture-only-token-not-for-production
+          AERO_ALLOW_NETWORK_MOCKS: "1" # explicit testing-only opt-in
+        run: |
+          CHROME=$(find "$HOME/.cache/ms-playwright" -path '*/chrome-linux64/chrome' | head -1)
+          "$CHROME" --headless --no-sandbox --remote-debugging-port=9222 --user-data-dir="$RUNNER_TEMP/aero-chrome" about:blank >chrome.log 2>&1 &
+          CHROME_PID=$!
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory examples >fixture.log 2>&1 &
+          FIXTURE_PID=$!
+          AERO_UPLOAD_ROOT="$PWD/examples" target/debug/aero mcp --transport http >aero.log 2>&1 &
+          AERO_PID=$!
+          trap 'kill "$CHROME_PID" "$FIXTURE_PID" "$AERO_PID" || true' EXIT
+          for url in http://127.0.0.1:9222/json/version http://127.0.0.1:4173/login.html http://127.0.0.1:8931/health; do
+            curl --retry 20 --retry-connrefused --retry-delay 1 --fail "$url" >/dev/null
+          done
+          export AERO_UPLOAD_ROOT="$PWD/examples"
+          python3 tests/e2e_extended.py
+          python3 tests/transports_profiles_e2e.py
+          python3 tests/supervisor_e2e.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-evidence
+          path: |
+            artifacts/
+            *.log
