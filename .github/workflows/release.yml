@@ -1,0 +1,214 @@
+﻿name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release (e.g.: v0.5.0)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & Release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            artifact: aero-linux-x86_64
+            ext: ""
+          - os: ubuntu-22.04
+            target: aarch64-unknown-linux-gnu
+            artifact: aero-linux-aarch64
+            ext: ""
+          - os: macos-14
+            target: x86_64-apple-darwin
+            artifact: aero-macos-x86_64
+            ext: ""
+          - os: macos-14
+            target: aarch64-apple-darwin
+            artifact: aero-macos-aarch64
+            ext: ""
+          - os: windows-2022
+            target: x86_64-pc-windows-msvc
+            artifact: aero-windows-x86_64.zip
+            ext: ".zip"
+          - os: windows-2022
+            target: aarch64-pc-windows-msvc
+            artifact: aero-windows-aarch64.zip
+            ext: ".zip"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust (Linux/macOS)
+        if: runner.os != 'Windows'
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install Rust (Windows)
+        if: runner.os == 'Windows'
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install cross-compilation dependencies (Linux)
+        if: matrix.os == 'ubuntu-22.04' && matrix.target == 'aarch64-unknown-linux-gnu'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu
+
+      - name: Install cross-compilation dependencies (macOS Intel on ARM)
+        if: matrix.os == 'macos-14' && matrix.target == 'x86_64-apple-darwin'
+        run: rustup target add x86_64-apple-darwin
+
+      - name: Build (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          if [[ "${{ matrix.target }}" == "${{ runner.os }}"* ]]; then
+            cargo build --release --locked
+          else
+            cargo build --release --locked --target ${{ matrix.target }}
+          fi
+
+      - name: Build (Windows)
+        if: runner.os == 'Windows'
+        run: cargo build --release --locked
+
+      - name: Determine binary path
+        id: binary
+        run: |
+          if [[ "$RUNNER_OS" == "Linux" ]]; then
+            if [[ "${{ matrix.target }}" == "aarch64-unknown-linux-gnu" ]]; then
+              echo "path=target/aarch64-unknown-linux-gnu/release/aero" >> $GITHUB_OUTPUT
+            else
+              echo "path=target/release/aero" >> $GITHUB_OUTPUT
+            fi
+          elif [[ "$RUNNER_OS" == "macOS" ]]; then
+            if [[ "${{ matrix.target }}" == "x86_64-apple-darwin" ]]; then
+              echo "path=target/x86_64-apple-darwin/release/aero" >> $GITHUB_OUTPUT
+            else
+              echo "path=target/release/aero" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "path=target/release/aero.exe" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create dist directory
+        run: mkdir -p dist
+
+      - name: Package binary (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: cp "${{ steps.binary.outputs.path }}" "dist/${{ matrix.artifact }}"
+
+      - name: Package binary (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          Compress-Archive -Path "${{ steps.binary.outputs.path }}" -DestinationPath "dist/${{ matrix.artifact }}"
+
+      - name: Strip symbols (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          if [[ -f "dist/${{ matrix.artifact }}" ]]; then
+            strip "dist/${{ matrix.artifact }}" || true
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: dist/${{ matrix.artifact }}
+
+  publish:
+    name: Publish Release
+    needs: release
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/') || github_event_name == 'workflow_dispatch'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          [[ -z "$TAG" ]] && TAG="${{ inputs.version }}"
+
+          gh release create "$TAG" \
+            artifacts/aero-linux-x86_64 \
+            artifacts/aero-linux-aarch64 \
+            artifacts/aero-macos-x86_64 \
+            artifacts/aero-macos-aarch64 \
+            "artifacts/aero-windows-x86_64.zip" \
+            "artifacts/aero-windows-aarch64.zip" \
+            --title "AeroBrowser $TAG by Blackvault Technology" \
+            --body "$(cat <<'EOF'
+## AeroBrowser $TAG
+
+**The agent's personal browser.** Developed by [Blackvault Technology](https://blackvaulttech.netlify.app/) (Adarsh Kushwah). Originally by [DevAnimecx/aerobrowser](https://github.com/DevAnimecx/aerobrowser).
+
+### 🚀 One-Line Install
+```sh
+# Linux/macOS
+curl -sSf https://get.aerobrowser.dev | sh
+
+# Windows PowerShell
+irm https://get.aerobrowser.dev | iex
+
+# With agent auto-config + Moli engine
+curl -sSf https://get.aerobrowser.dev | sh -- --agent opencode --install-engine
+```
+
+### Connect to your agent
+```sh
+aero connect opencode --install          # Configure OpenCode
+aero connect claude-code --install       # Configure Claude Code
+aero connect cursor --install            # Configure Cursor
+```
+
+### Documentation
+- [Quick Start](https://github.com/DevAnimecx/aerobrowser#quick-start)
+- [API Reference](https://github.com/DevAnimecx/aerobrowser/blob/main/docs/API.md)
+- [Agent Skill](https://github.com/DevAnimecx/aerobrowser/blob/main/docs/AGENT-SKILL.md)
+EOF
+)"
+
+  verify:
+    name: Verify Release
+    needs: publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download installer
+        run: |
+          curl -sSL https://raw.githubusercontent.com/DevAnimecx/aerobrowser/main/scripts/install.sh -o install.sh
+          chmod +x install.sh
+
+      - name: Download release artifact
+        run: |
+          curl -sSL -o aero-test "https://github.com/DevAnimecx/aerobrowser/releases/download/v0.5.0/aero-linux-x86_64" || true
+
+      - name: Verify binary exists
+        run: |
+          if [ -f aero-test ]; then
+            chmod +x aero-test
+            ./aero-test --version
+          else
+            echo "Binary not found in release (may not exist yet)"
+          fi

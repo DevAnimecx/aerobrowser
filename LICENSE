@@ -1,0 +1,54 @@
+﻿Business Source License 1.1
+
+Copyright (c) 2026 Blackvault Technology, Inc.
+Copyright (c) 2026 AeroBrowser contributors
+
+This License allows you to copy and modify the software for any purpose,
+including commercial use, but prevents it from being used in a product that
+competes with the commercial offering without a commercial license.
+
+Terms:
+1. Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions are met:
+   
+   a. Redistributions of source code must retain the copyright notice, this
+      list of conditions, and the additional restrictions described below.
+      
+   b. Redistributions in binary form must reproduce the copyright notice,
+      this list of conditions, and the additional restrictions in the
+      documentation and/or other materials provided with the distribution.
+
+2. Additional Restrictions:
+   a. The software may not be used in a product that competes with the
+      commercial AeroBrowser offering by Blackvault Technology, Inc.
+      
+   b. Production use by corporations with annual revenue exceeding
+      $10 million USD requires a commercial license.
+      
+   c. Hosting the software as a service (SaaS) requires a commercial license.
+
+3. Free Use:
+   a. The software is free for personal, educational, non-commercial, and
+      internal business use (under the $10M revenue threshold).
+      
+   b. Open source projects may use this software per the terms above.
+
+4. Commercial Licensing:
+   Commercial licenses are available from:
+   sales@https://blackvaulttech.netlify.app/
+   
+   A commercial license grants the right to:
+   - Remove the additional restrictions in Section 2
+   - Use in high-revenue corporate environments
+   - Use in SaaS offerings
+   - Receive commercial support
+
+5. Notice:
+   This software is provided "as is", without warranty of any kind.
+
+---
+
+For questions about licensing, contact: sales@https://blackvaulttech.netlify.app/
+Company: Blackvault Technology, Inc.
+Developer: Adarsh Kushwah
+
