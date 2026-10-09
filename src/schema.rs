@@ -1,0 +1,206 @@
+use serde_json::{json, Value};
+pub fn tools() -> Vec<Value> {
+    let mut definitions = vec![
+        (
+            "navigate",
+            "Navigate to an HTTP(S) URL",
+            json!({"url":{"type":"string"},"wait_until":{"type":"string","enum":["load","domcontentloaded","networkidle"]},"timeout_ms":{"type":"integer","minimum":1,"maximum":30000}}),
+            vec!["url"],
+        ),
+        (
+            "snapshot",
+            "Get accessibility tree with session-scoped element refs. With delta:true returns only elements changed since the previous snapshot on this tab",
+            json!({"interactive_only":{"type":"boolean"},"max_nodes":{"type":"integer","minimum":1,"maximum":1000},"max_depth":{"type":"integer","minimum":0,"maximum":100},"compact":{"type":"boolean"},"selector":{"type":"string"},"cursor_interactive":{"type":"boolean"},"delta":{"type":"boolean"}}),
+            vec![],
+        ),
+        (
+            "batch",
+            "Run several tools in order in one MCP message. Sequential, shares one browser, stops at stop_on_error",
+            json!({"calls":{"type":"array","items":{"type":"object"}},"stop_on_error":{"type":"boolean"},"max_calls":{"type":"integer","minimum":1,"maximum":50}}),
+            vec!["calls"],
+        ),
+        (
+            "click",
+            "Click a referenced element or CSS selector",
+            locator(),
+            vec![],
+        ),
+        (
+            "fill",
+            "Set input value and dispatch input/change",
+            with_value(),
+            vec!["value"],
+        ),
+        (
+            "type",
+            "Append text to a focused input",
+            with_value(),
+            vec!["value"],
+        ),
+        ("get_text", "Read element text", locator(), vec![]),
+        (
+            "get_attribute",
+            "Read an attribute",
+            json!({"ref":{"type":"string"},"selector":{"type":"string"},"attribute":{"type":"string"}}),
+            vec!["attribute"],
+        ),
+        ("check", "Check checkbox", locator(), vec![]),
+        ("uncheck", "Uncheck checkbox", locator(), vec![]),
+        (
+            "select_option",
+            "Select option by value",
+            with_value(),
+            vec!["value"],
+        ),
+        (
+            "get_bounding_box",
+            "Get element client rectangle",
+            locator(),
+            vec![],
+        ),
+        ("hover", "Move mouse to element center", locator(), vec![]),
+        (
+            "press_key",
+            "Press Enter, Tab, Escape, Backspace, or one character",
+            json!({"key":{"type":"string"}}),
+            vec!["key"],
+        ),
+        (
+            "evaluate",
+            "Execute JavaScript in current page; trusted clients only",
+            json!({"script":{"type":"string"}}),
+            vec!["script"],
+        ),
+        ("get_url", "Get page URL", json!({}), vec![]),
+        ("get_title", "Get page title", json!({}), vec![]),
+        (
+            "get_dom",
+            "Get raw page HTML",
+            json!({"selector":{"type":"string"}}),
+            vec![],
+        ),
+        (
+            "reload",
+            "Reload page",
+            json!({"ignore_cache":{"type":"boolean"}}),
+            vec![],
+        ),
+        ("go_back", "Go back in history", json!({}), vec![]),
+        ("go_forward", "Go forward in history", json!({}), vec![]),
+        (
+            "scroll",
+            "Scroll page",
+            json!({"direction":{"type":"string","enum":["up","down","left","right"]},"pixels":{"type":"integer"}}),
+            vec!["direction"],
+        ),
+        (
+            "wait_for",
+            "Wait for visible, hidden or attached selector",
+            json!({"selector":{"type":"string"},"state":{"type":"string","enum":["visible","hidden","attached"]},"timeout_ms":{"type":"integer","minimum":1,"maximum":30000}}),
+            vec!["selector"],
+        ),
+        (
+            "screenshot",
+            "Capture PNG or JPEG as base64",
+            json!({"format":{"type":"string","enum":["png","jpeg"]},"full_page":{"type":"boolean"},"selector":{"type":"string"},"annotate":{"type":"boolean"},"quality":{"type":"integer","minimum":0,"maximum":100},"path":{"type":"string"}}),
+            vec![],
+        ),
+        (
+            "save_pdf",
+            "Print page to PDF as base64",
+            json!({"path":{"type":"string"},"format":{"type":"string","enum":["a4","letter"]},"landscape":{"type":"boolean"}}),
+            vec![],
+        ),
+        (
+            "set_viewport",
+            "Set viewport dimensions",
+            json!({"width":{"type":"integer"},"height":{"type":"integer"}}),
+            vec!["width", "height"],
+        ),
+        (
+            "list_tabs",
+            "List only this session's tabs",
+            json!({}),
+            vec![],
+        ),
+        (
+            "new_tab",
+            "Create a tab in this browser context",
+            json!({"url":{"type":"string"}}),
+            vec![],
+        ),
+        (
+            "switch_tab",
+            "Switch active tab",
+            json!({"tab_id":{"type":"string"}}),
+            vec!["tab_id"],
+        ),
+        (
+            "close_tab",
+            "Close owned tab",
+            json!({"tab_id":{"type":"string"}}),
+            vec!["tab_id"],
+        ),
+        (
+            "get_cookies",
+            "Get this context's cookies",
+            json!({}),
+            vec![],
+        ),
+        (
+            "set_cookie",
+            "Set cookie in this context",
+            json!({"name":{"type":"string"},"value":{"type":"string"},"url":{"type":"string"}}),
+            vec!["name", "value", "url"],
+        ),
+        (
+            "test_run",
+            "Execute line-based test steps; no shell execution",
+            json!({"steps":{"type":"string"}}),
+            vec!["steps"],
+        ),
+        (
+            "server_status",
+            "Get session status and honest capability information",
+            json!({}),
+            vec![],
+        ),
+    ];
+    definitions.extend([
+        ("get_computed_style","Read computed styles",json!({"ref":{"type":"string"},"selector":{"type":"string"},"properties":{"type":"array","items":{"type":"string"}}}),vec![]),
+        ("upload_file","Upload from explicitly configured AERO_UPLOAD_ROOT",json!({"ref":{"type":"string"},"selector":{"type":"string"},"path":{"type":"string"}}),vec!["path"]),
+        ("drag","Native CDP pointer drag; assert application drop outcome separately",json!({"from_ref":{"type":"string"},"to_ref":{"type":"string"},"from_selector":{"type":"string"},"to_selector":{"type":"string"}}),vec![]),
+        ("double_click","Double-click element",locator(),vec![]),
+        ("right_click","Right-click element",locator(),vec![]),
+        ("close","Dispose this session browser context and managed worker",json!({}),vec![]),
+        ("annotate_screenshot","Screenshot with temporary ref overlays",json!({"path":{"type":"string"}}),vec![]),
+        ("save_state","Export cookies, tabs, storage and scroll; not a process checkpoint",json!({"path":{"type":"string"}}),vec![]),
+        ("restore_state","Stage state in a new context with pre-boot storage; retain old context on failure",json!({"path":{"type":"string"},"state":{"type":"object"}}),vec![]),
+        ("test_assert_text","Assert element text",json!({"ref":{"type":"string"},"selector":{"type":"string"},"expected":{"type":"string"},"contains":{"type":"boolean"}}),vec!["expected"]),
+        ("test_assert_attr","Assert element attribute",json!({"ref":{"type":"string"},"selector":{"type":"string"},"attribute":{"type":"string"},"expected":{"type":"string"}}),vec!["attribute","expected"]),
+        ("test_assert_url","Assert URL",json!({"expected":{"type":"string"},"contains":{"type":"boolean"}}),vec!["expected"]),
+        ("test_assert_visible","Assert element visibility",locator(),vec![]),
+        ("test_report","Save last test result as escaped HTML or JSON",json!({"path":{"type":"string"},"format":{"type":"string","enum":["html","json"]}}),vec!["path"]),
+        ("intercept_request","Current-tab interception; mock requires operator AERO_ALLOW_NETWORK_MOCKS=1",json!({"pattern":{"type":"string"},"action":{"type":"string","enum":["block","mock","log","clear"]},"mock_response":{"type":"object"}}),vec!["pattern","action"]),
+        ("get_network_log","Read bounded current-tab CDP network events",json!({"filter":{"type":"string"}}),vec![]),
+        ("save_har","Save observed CDP HAR; missing measurements -1, bodies omitted",json!({"path":{"type":"string"}}),vec![]),
+        ("get_console_logs","Read current-tab console and exception events",json!({"level":{"type":"string"}}),vec![]),
+        ("get_performance","Read measured page timings; unavailable values are null",json!({}),vec![]),
+        ("get_memory_usage","Read real V8 heap and DOM counters",json!({}),vec![]),
+        ("set_user_agent","Set current-tab user agent",json!({"ua":{"type":"string"}}),vec!["ua"]),
+        ("set_geolocation","Override coordinates without granting permissions",json!({"latitude":{"type":"number","minimum":-90,"maximum":90},"longitude":{"type":"number","minimum":-180,"maximum":180},"accuracy":{"type":"number","minimum":0}}),vec!["latitude","longitude"]),
+        ("cdp_raw","Restricted current-target CDP allowlist, not unrestricted CDP",json!({"method":{"type":"string"},"params":{"type":"object"}}),vec!["method"]),
+        ("server_shutdown","Stop only this session worker, never other clients",json!({"save_state":{"type":"string"}}),vec![]),
+        ("server_profile_list","List implemented and unavailable sandbox profiles",json!({}),vec![]),
+        ("server_profile_set","Tighten managed worker profile before browser starts; no relaxation",json!({"name":{"type":"string","enum":["offline","untrusted"]}}),vec!["name"]),
+        ("server_logs","Read bounded metadata-only session operation log",json!({"lines":{"type":"integer","minimum":1,"maximum":1000}}),vec![]),
+        ("clear_cookies","Clear this context cookies",json!({}),vec![]),
+    ]);
+    definitions.into_iter().map(|(n,d,p,r)|json!({"name":n,"description":d,"inputSchema":{"type":"object","properties":p,"required":r,"additionalProperties":false}})).collect()
+}
+fn locator() -> Value {
+    json!({"ref":{"type":"string"},"selector":{"type":"string"}})
+}
+fn with_value() -> Value {
+    json!({"ref":{"type":"string"},"selector":{"type":"string"},"value":{"type":"string"}})
+}
