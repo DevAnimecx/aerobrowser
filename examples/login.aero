@@ -1,0 +1,11 @@
+# Local fixture login flow
+open http://127.0.0.1:4173/login.html
+assert title "Aero Test App"
+wait "#email" 3000
+fill "#email" "test@example.com"
+fill "#password" "fixture-only-password"
+click "button"
+wait "#result" 3000
+assert text "#result" contains "Welcome, test@example.com"
+assert url contains "#dashboard"
+assert visible "#result"

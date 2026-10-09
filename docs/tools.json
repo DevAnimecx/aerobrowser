@@ -1,0 +1,1096 @@
+{
+  "tools": [
+    {
+      "description": "Navigate to an HTTP(S) URL",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "timeout_ms": {
+            "maximum": 30000,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "url": {
+            "type": "string"
+          },
+          "wait_until": {
+            "enum": [
+              "load",
+              "domcontentloaded",
+              "networkidle"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "type": "object"
+      },
+      "name": "navigate"
+    },
+    {
+      "description": "Get accessibility tree with session-scoped element refs",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "compact": {
+            "type": "boolean"
+          },
+          "cursor_interactive": {
+            "type": "boolean"
+          },
+          "interactive_only": {
+            "type": "boolean"
+          },
+          "max_depth": {
+            "maximum": 100,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "max_nodes": {
+            "maximum": 1000,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "selector": {
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "name": "snapshot"
+    },
+    {
+      "description": "Click a referenced element or CSS selector",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "ref": {
+            "type": "string"
+          },
+          "selector": {
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "name": "click"
+    },
+    {
+      "description": "Set input value and dispatch input/change",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "ref": {
+            "type": "string"
+          },
+          "selector": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "value"
+        ],
+        "type": "object"
+      },
+      "name": "fill"
+    },
+    {
+      "description": "Append text to a focused input",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "ref": {
+            "type": "string"
+          },
+          "selector": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "value"
+        ],
+        "type": "object"
+      },
+      "name": "type"
+    },
+    {
+      "description": "Read element text",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "ref": {
+            "type": "string"
+          },
+          "selector": {
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "name": "get_text"
+    },
+    {
+      "description": "Read an attribute",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "attribute": {
+            "type": "string"
+          },
+          "ref": {
+            "type": "string"
+          },
+          "selector": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "attribute"
+        ],
+        "type": "object"
+      },
+      "name": "get_attribute"
+    },
+    {
+      "description": "Check checkbox",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "ref": {
+            "type": "string"
+          },
+          "selector": {
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "name": "check"
+    },
+    {
+      "description": "Uncheck checkbox",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "ref": {
+            "type": "string"
+          },
+          "selector": {
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "name": "uncheck"
+    },
+    {
+      "description": "Select option by value",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "ref": {
+            "type": "string"
+          },
+          "selector": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "value"
+        ],
+        "type": "object"
+      },
+      "name": "select_option"
+    },
+    {
+      "description": "Get element client rectangle",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "ref": {
+            "type": "string"
+          },
+          "selector": {
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "name": "get_bounding_box"
+    },
+    {
+      "description": "Move mouse to element center",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "ref": {
+            "type": "string"
+          },
+          "selector": {
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "name": "hover"
+    },
+    {
+      "description": "Press Enter, Tab, Escape, Backspace, or one character",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "key"
+        ],
+        "type": "object"
+      },
+      "name": "press_key"
+    },
+    {
+      "description": "Execute JavaScript in current page; trusted clients only",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "script": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "script"
+        ],
+        "type": "object"
+      },
+      "name": "evaluate"
+    },
+    {
+      "description": "Get page URL",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "name": "get_url"
+    },
+    {
+      "description": "Get page title",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "name": "get_title"
+    },
+    {
+      "description": "Get raw page HTML",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "selector": {
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "name": "get_dom"
+    },
+    {
+      "description": "Reload page",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "ignore_cache": {
+            "type": "boolean"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "name": "reload"
+    },
+    {
+      "description": "Go back in history",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "name": "go_back"
+    },
+    {
+      "description": "Go forward in history",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "name": "go_forward"
+    },
+    {
+      "description": "Scroll page",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "direction": {
+            "enum": [
+              "up",
+              "down",
+              "left",
+              "right"
+            ],
+            "type": "string"
+          },
+          "pixels": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "direction"
+        ],
+        "type": "object"
+      },
+      "name": "scroll"
+    },
+    {
+      "description": "Wait for visible, hidden or attached selector",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "selector": {
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "visible",
+              "hidden",
+              "attached"
+            ],
+            "type": "string"
+          },
+          "timeout_ms": {
+            "maximum": 30000,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "selector"
+        ],
+        "type": "object"
+      },
+      "name": "wait_for"
+    },
+    {
+      "description": "Capture PNG or JPEG as base64",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "annotate": {
+            "type": "boolean"
+          },
+          "format": {
+            "enum": [
+              "png",
+              "jpeg"
+            ],
+            "type": "string"
+          },
+          "full_page": {
+            "type": "boolean"
+          },
+          "path": {
+            "type": "string"
+          },
+          "quality": {
+            "maximum": 100,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "selector": {
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "name": "screenshot"
+    },
+    {
+      "description": "Print page to PDF as base64",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "format": {
+            "enum": [
+              "a4",
+              "letter"
+            ],
+            "type": "string"
+          },
+          "landscape": {
+            "type": "boolean"
+          },
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "name": "save_pdf"
+    },
+    {
+      "description": "Set viewport dimensions",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "height": {
+            "type": "integer"
+          },
+          "width": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "width",
+          "height"
+        ],
+        "type": "object"
+      },
+      "name": "set_viewport"
+    },
+    {
+      "description": "List only this session's tabs",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "name": "list_tabs"
+    },
+    {
+      "description": "Create a tab in this browser context",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "name": "new_tab"
+    },
+    {
+      "description": "Switch active tab",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "tab_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "tab_id"
+        ],
+        "type": "object"
+      },
+      "name": "switch_tab"
+    },
+    {
+      "description": "Close owned tab",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "tab_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "tab_id"
+        ],
+        "type": "object"
+      },
+      "name": "close_tab"
+    },
+    {
+      "description": "Get this context's cookies",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "name": "get_cookies"
+    },
+    {
+      "description": "Set cookie in this context",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "value",
+          "url"
+        ],
+        "type": "object"
+      },
+      "name": "set_cookie"
+    },
+    {
+      "description": "Execute line-based test steps; no shell execution",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "steps": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "steps"
+        ],
+        "type": "object"
+      },
+      "name": "test_run"
+    },
+    {
+      "description": "Get session status and honest capability information",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "name": "server_status"
+    },
+    {
+      "description": "Read computed styles",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "properties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ref": {
+            "type": "string"
+          },
+          "selector": {
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "name": "get_computed_style"
+    },
+    {
+      "description": "Upload from explicitly configured AERO_UPLOAD_ROOT",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "ref": {
+            "type": "string"
+          },
+          "selector": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "type": "object"
+      },
+      "name": "upload_file"
+    },
+    {
+      "description": "Native CDP pointer drag; assert application drop outcome separately",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "from_ref": {
+            "type": "string"
+          },
+          "from_selector": {
+            "type": "string"
+          },
+          "to_ref": {
+            "type": "string"
+          },
+          "to_selector": {
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "name": "drag"
+    },
+    {
+      "description": "Double-click element",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "ref": {
+            "type": "string"
+          },
+          "selector": {
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "name": "double_click"
+    },
+    {
+      "description": "Right-click element",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "ref": {
+            "type": "string"
+          },
+          "selector": {
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "name": "right_click"
+    },
+    {
+      "description": "Dispose this session browser context and managed worker",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "name": "close"
+    },
+    {
+      "description": "Screenshot with temporary ref overlays",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "name": "annotate_screenshot"
+    },
+    {
+      "description": "Export cookies, tabs, storage and scroll; not a process checkpoint",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "name": "save_state"
+    },
+    {
+      "description": "Stage state in a new context with pre-boot storage; retain old context on failure",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "state": {
+            "type": "object"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "name": "restore_state"
+    },
+    {
+      "description": "Assert element text",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "contains": {
+            "type": "boolean"
+          },
+          "expected": {
+            "type": "string"
+          },
+          "ref": {
+            "type": "string"
+          },
+          "selector": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "expected"
+        ],
+        "type": "object"
+      },
+      "name": "test_assert_text"
+    },
+    {
+      "description": "Assert element attribute",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "attribute": {
+            "type": "string"
+          },
+          "expected": {
+            "type": "string"
+          },
+          "ref": {
+            "type": "string"
+          },
+          "selector": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "attribute",
+          "expected"
+        ],
+        "type": "object"
+      },
+      "name": "test_assert_attr"
+    },
+    {
+      "description": "Assert URL",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "contains": {
+            "type": "boolean"
+          },
+          "expected": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "expected"
+        ],
+        "type": "object"
+      },
+      "name": "test_assert_url"
+    },
+    {
+      "description": "Assert element visibility",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "ref": {
+            "type": "string"
+          },
+          "selector": {
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "name": "test_assert_visible"
+    },
+    {
+      "description": "Save last test result as escaped HTML or JSON",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "format": {
+            "enum": [
+              "html",
+              "json"
+            ],
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "type": "object"
+      },
+      "name": "test_report"
+    },
+    {
+      "description": "Current-tab interception; mock requires operator AERO_ALLOW_NETWORK_MOCKS=1",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "enum": [
+              "block",
+              "mock",
+              "log",
+              "clear"
+            ],
+            "type": "string"
+          },
+          "mock_response": {
+            "type": "object"
+          },
+          "pattern": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "pattern",
+          "action"
+        ],
+        "type": "object"
+      },
+      "name": "intercept_request"
+    },
+    {
+      "description": "Read bounded current-tab CDP network events",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "filter": {
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "name": "get_network_log"
+    },
+    {
+      "description": "Save observed CDP HAR; missing measurements -1, bodies omitted",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "name": "save_har"
+    },
+    {
+      "description": "Read current-tab console and exception events",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "level": {
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "name": "get_console_logs"
+    },
+    {
+      "description": "Read measured page timings; unavailable values are null",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "name": "get_performance"
+    },
+    {
+      "description": "Read real V8 heap and DOM counters",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "name": "get_memory_usage"
+    },
+    {
+      "description": "Set current-tab user agent",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "ua": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ua"
+        ],
+        "type": "object"
+      },
+      "name": "set_user_agent"
+    },
+    {
+      "description": "Override coordinates without granting permissions",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "accuracy": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "latitude": {
+            "maximum": 90,
+            "minimum": -90,
+            "type": "number"
+          },
+          "longitude": {
+            "maximum": 180,
+            "minimum": -180,
+            "type": "number"
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude"
+        ],
+        "type": "object"
+      },
+      "name": "set_geolocation"
+    },
+    {
+      "description": "Restricted current-target CDP allowlist, not unrestricted CDP",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "method": {
+            "type": "string"
+          },
+          "params": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "method"
+        ],
+        "type": "object"
+      },
+      "name": "cdp_raw"
+    },
+    {
+      "description": "Stop only this session worker, never other clients",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "save_state": {
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "name": "server_shutdown"
+    },
+    {
+      "description": "List implemented and unavailable sandbox profiles",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "name": "server_profile_list"
+    },
+    {
+      "description": "Tighten managed worker profile before browser starts; no relaxation",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "enum": [
+              "offline",
+              "untrusted"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "name": "server_profile_set"
+    },
+    {
+      "description": "Read bounded metadata-only session operation log",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "lines": {
+            "maximum": 1000,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "name": "server_logs"
+    },
+    {
+      "description": "Clear this context cookies",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "name": "clear_cookies"
+    }
+  ]
+}
