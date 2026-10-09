@@ -2,55 +2,141 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, master]
   pull_request:
-    branches: [main]
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -D warnings
 
 jobs:
-  unit:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
+  fmt:
+    name: Formatting
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt
       - run: cargo fmt --check
-      - run: cargo test --locked
-      - run: cargo build --release --locked
-  browser:
+
+  lint:
+    name: Clippy
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo clippy --locked --all-targets -- -D warnings
+
+  encoding:
+    name: Text encoding
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Reject mojibake
+        run: python scripts/check-encoding.py
+
+  license:
+    name: License and metadata
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify license metadata is consistent
+        run: python scripts/check-metadata.py
+
+  unit:
+    name: Tests (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo test --locked --all-targets
+      - run: cargo build --release --locked
+
+  browser:
+    name: Real browser integration
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - run: cargo build --locked
       - run: npx --yes playwright install --with-deps chromium
-      - name: Real browser integration
+      - name: Run integration suites
         shell: bash
         env:
+          # Loopback-only credential for the CI fixture server. Never reuse.
           AERO_TOKEN: ci-fixture-only-token-not-for-production
-          AERO_ALLOW_NETWORK_MOCKS: "1" # explicit testing-only opt-in
+          # Explicit opt-in; mocks stay disabled in normal execution.
+          AERO_ALLOW_NETWORK_MOCKS: "1"
+          AERO_EXPECT_VERSION: "0.5.0"
         run: |
-          CHROME=$(find "$HOME/.cache/ms-playwright" -path '*/chrome-linux64/chrome' | head -1)
-          "$CHROME" --headless --no-sandbox --remote-debugging-port=9222 --user-data-dir="$RUNNER_TEMP/aero-chrome" about:blank >chrome.log 2>&1 &
+          set -euo pipefail
+          export AERO_UPLOAD_ROOT="$PWD/examples"
+          mkdir -p artifacts/v05
+
+          CHROME=$(find "$HOME/.cache/ms-playwright" -path '*/chrome-linux*/chrome' -type f | head -1)
+          if [ -z "$CHROME" ]; then
+            echo "::error::Playwright Chromium was not found; cannot run integration tests."
+            exit 1
+          fi
+          "$CHROME" --headless --no-sandbox --remote-debugging-port=9222 \
+            --user-data-dir="$RUNNER_TEMP/aero-chrome" about:blank >chrome.log 2>&1 &
           CHROME_PID=$!
           python3 -m http.server 4173 --bind 127.0.0.1 --directory examples >fixture.log 2>&1 &
           FIXTURE_PID=$!
-          AERO_UPLOAD_ROOT="$PWD/examples" target/debug/aero mcp --transport http >aero.log 2>&1 &
+          target/debug/aero mcp --transport http >aero.log 2>&1 &
           AERO_PID=$!
-          trap 'kill "$CHROME_PID" "$FIXTURE_PID" "$AERO_PID" || true' EXIT
-          for url in http://127.0.0.1:9222/json/version http://127.0.0.1:4173/login.html http://127.0.0.1:8931/health; do
-            curl --retry 20 --retry-connrefused --retry-delay 1 --fail "$url" >/dev/null
+          trap 'kill "$CHROME_PID" "$FIXTURE_PID" "$AERO_PID" 2>/dev/null || true' EXIT
+
+          for url in http://127.0.0.1:9222/json/version \
+                     http://127.0.0.1:4173/login.html \
+                     http://127.0.0.1:8931/health; do
+            curl --retry 30 --retry-connrefused --retry-delay 1 --fail "$url" >/dev/null
           done
-          export AERO_UPLOAD_ROOT="$PWD/examples"
-          python3 tests/e2e_extended.py
-          python3 tests/transports_profiles_e2e.py
-          python3 tests/supervisor_e2e.py
+
+          # Every suite that can run on a generic Linux host. Moli, cgroup and
+          # Landlock suites are covered by the sandbox job below.
+          for suite in e2e_extended transports_profiles_e2e supervisor_e2e v05_features_e2e; do
+            echo "::group::tests/${suite}.py"
+            python3 "tests/${suite}.py"
+            echo "::endgroup::"
+          done
+
+          echo "::group::tests/v03_stdio_cancel.py"
+          python3 tests/v03_stdio_cancel.py
+          echo "::endgroup::"
+      - name: Verify the shipped skill file is present
+        run: |
+          test -f docs/AGENT-SKILL.md || { echo "::error::docs/AGENT-SKILL.md is missing; profiles.rs embeds it at compile time."; exit 1; }
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -58,3 +144,71 @@ jobs:
           path: |
             artifacts/
             *.log
+          if-no-files-found: ignore
+
+  sandbox:
+    name: Sandbox and resource limits
+    # Landlock, seccomp and cgroup v2 require a Linux kernel with the relevant
+    # controllers; hosted macOS/Windows runners cannot exercise them.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: sudo apt-get update && sudo apt-get install -y gcc
+      - run: cargo build --locked
+      - name: Sandbox probe
+        run: |
+          set -euo pipefail
+          target/debug/aero sandbox probe | tee sandbox-probe.json
+      - name: Landlock enforcement
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! grep -q '"supported": true' sandbox-probe.json; then
+            echo "::notice::Landlock is unavailable on this kernel; skipping enforcement assertions."
+            exit 0
+          fi
+          python3 tests/sandbox_e2e.py
+      - name: cgroup v2 delegation and OOM isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f /sys/fs/cgroup/cgroup.controllers ]; then
+            echo "::notice::cgroup v2 is unavailable; skipping resource-limit assertions."
+            exit 0
+          fi
+          if ! grep -qw memory /sys/fs/cgroup/cgroup.controllers; then
+            echo "::notice::The memory controller is not delegated; skipping OOM assertions."
+            exit 0
+          fi
+          bash scripts/run-delegated.sh
+          python3 tests/v03_real_e2e.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sandbox-evidence
+          path: |
+            artifacts/
+            sandbox-probe.json
+          if-no-files-found: ignore
+
+  docs:
+    name: Documentation integrity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify internal links resolve
+        run: python scripts/check-docs.py
+      - name: Build the SBOM
+        run: python scripts/generate-sbom.py --check
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: docs/SBOM.cdx.json
