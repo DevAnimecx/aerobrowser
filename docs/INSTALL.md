@@ -1,158 +1,152 @@
-﻿# Installation Guide
+# Installation
 
-AeroBrowser is available as pre-built binaries for Linux, macOS, and Windows, or from source.
+Pre-built binaries are published as GitHub Releases for six targets. There is no
+hosted installer domain; both installers read directly from the release API.
 
-## Prerequisites
+## Requirements
 
-### All platforms
-- A browser supporting Chrome DevTools Protocol (CDP): Chrome, Edge, Brave, or Chromium
-- Port 9222 free on localhost (for browser remote debugging)
+| Platform | Requirement | Managed engine | Kernel isolation |
+|---|---|---|---|
+| Linux x86_64 | glibc 2.31+, OpenSSL 3.x, fontconfig, kernel 5.13+ | Yes | Landlock + seccomp + cgroup v2 |
+| Linux aarch64 | same | No | Linux only, but no managed engine |
+| macOS 12+ | — | No | Seatbelt path exists, unvalidated |
+| Windows 10/11 | — | No | **None.** No AppContainer or Job Object |
 
-### Linux (recommended for managed Moli engine)
-- Linux kernel with Landlock (ABI >= 2, kernel 5.13+)
-- glibc 2.31+ (Ubuntu 20.04+, Debian 11+, etc.)
-- OpenSSL 3.x
-- Fontconfig
+Landlock requires kernel 5.13 or newer. Run `aero sandbox probe` to confirm what
+your kernel provides; `aero doctor` includes it.
 
-### macOS
-- macOS 12.0+ (Monterey)
-- No kernel sandbox available; managed Moli not supported. Use external Chrome.
+On any platform you can use an external Chromium-family browser instead. That
+browser's own security model is the boundary — AeroBrowser applies no kernel
+policy to it.
 
-### Windows
-- Windows 10/11 (x86_64 or ARM64)
-- No kernel sandbox available; managed Moli not supported. Use external Chrome.
+---
 
-## Quick Install
+## One-line install
 
-### Linux / macOS (one-liner)
 ```sh
-curl -sSf https://get.aerobrowser.dev | sh
+# Linux / macOS
+curl -fsSL https://raw.githubusercontent.com/DevAnimecx/aerobrowser/master/scripts/install.sh | sh
 ```
 
-### Windows (PowerShell)
 ```powershell
-irm https://get.aerobrowser.dev | iex
+# Windows PowerShell 5.1 or newer
+irm https://raw.githubusercontent.com/DevAnimecx/aerobrowser/master/scripts/install.ps1 | iex; Install-AeroBrowser
 ```
 
-### With agent auto-config
+With agent configuration in one step:
+
 ```sh
-# Linux: install + configure opencode + auto-install Moli engine
-curl -sSf https://get.aerobrowser.dev | sh -s -- --agent opencode --install-engine
-
-# Windows PowerShell
-iwr https://get.aerobrowser.dev | iex; Install-AeroBrowser -Agent opencode
+curl -fsSL https://raw.githubusercontent.com/DevAnimecx/aerobrowser/master/scripts/install.sh \
+  | sh -s -- --agent opencode --install-engine
 ```
 
-## Install Options
+```powershell
+irm https://raw.githubusercontent.com/DevAnimecx/aerobrowser/master/scripts/install.ps1 | iex
+Install-AeroBrowser -Agent opencode -InstallEngine
+```
 
-| Flag | Description |
-|------|-------------|
-| `--dir DIR` | Install directory (default: `$HOME/.local/bin`) |
-| `--force` | Overwrite existing installation |
-| `--agent AGENT` | Auto-configure for agent (claude-code, opencode, cursor, vscode, codex, hermes) |
-| `--no-profile` | Skip adding to PATH profile |
-| `--install-engine` | Auto-install Moli engine (Linux x86_64 only) |
-| `--help` | Show all options |
+### What the installers verify
 
-## Platform-Specific Installation
+1. Resolves the latest release from the GitHub API, or honours `--version`/`-Version`.
+2. Downloads the asset for your platform.
+3. Fetches the release's `SHA256SUMS` and verifies the digest. A mismatch aborts
+   the install.
+4. Confirms the payload starts with an ELF, Mach-O, or PE magic number, so a 404
+   page can never reach your `PATH`.
+5. Writes to a staging file in the destination directory and moves it into place
+   atomically.
+6. Runs `aero --version`. If it fails, the binary is removed.
+7. Exits non-zero on any failure.
 
-### Linux
+### Installer options
 
-#### Option 1: One-liner (recommended)
+| Shell | PowerShell | Description |
+|---|---|---|
+| `--dir DIR` | `-InstallDir DIR` | Install location (default: `~/.local/bin`) |
+| `--version VER` | `-Version VER` | Pin a tag instead of latest |
+| `--force` | `-Force` | Replace an existing install |
+| `--agent NAME` | `-Agent NAME` | Configure an agent |
+| `--install-engine` | `-InstallEngine` | Fetch the managed engine (Linux x86_64) |
+| `--no-profile` | `-NoProfile` | Do not modify `PATH` |
+| `--no-verify` | `-NoVerify` | Skip checksum verification. Not recommended. |
+
+On Windows, if your policy blocks script execution:
+
+```powershell
+powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/DevAnimecx/aerobrowser/master/scripts/install.ps1 | iex; Install-AeroBrowser"
+```
+
+---
+
+## Manual download
+
+Every release includes `SHA256SUMS`. Verify before installing.
+
 ```sh
-curl -sSf https://get.aerobrowser.dev | sh -- --install-engine
+VERSION=v0.5.0
+curl -fsSLO "https://github.com/DevAnimecx/aerobrowser/releases/download/${VERSION}/aero-linux-x86_64"
+curl -fsSLO "https://github.com/DevAnimecx/aerobrowser/releases/download/${VERSION}/SHA256SUMS"
+sha256sum -c SHA256SUMS --ignore-missing
+chmod +x aero-linux-x86_64
+mv aero-linux-x86_64 ~/.local/bin/aero
 ```
 
-#### Option 2: From GitHub releases
-```sh
-# Download latest binary
-curl -L https://github.com/DevAnimecx/aerobrowser/releases/latest/download/aero-linux-x86_64 -o aero
-chmod +x aero
-sudo mv aero /usr/local/bin/aero
-```
+Windows archives ship the `LICENSE` alongside the binary, as BSL-1.1 redistribution
+requires.
 
-#### Option 3: Build from source
+---
+
+## Build from source
+
 ```sh
 git clone https://github.com/DevAnimecx/aerobrowser.git
 cd aerobrowser
 cargo build --release --locked
-sudo cp target/release/aero /usr/local/bin/aero
 ```
 
-### macOS
+The binary is at `target/release/aero` (`aero.exe` on Windows). Use `--locked` so
+the build uses the committed `Cargo.lock`.
 
-#### Option 1: One-liner
-```sh
-curl -sSf https://get.aerobrowser.dev | sh
-```
-
-#### Option 2: Homebrew (when available)
-```sh
-brew install DevAnimecx/aerobrowser/aero
-```
-
-#### Option 3: Build from source
-```sh
-git clone https://github.com/DevAnimecx/aerobrowser.git
-cd aerobrowser
-cargo build --release --locked
-sudo cp target/release/aero /usr/local/bin/aero
-```
-
-### Windows
-
-#### Option 1: PowerShell one-liner
-```powershell
-irm https://get.aerobrowser.dev | iex
-```
-
-#### Option 2: Manual download
-1. Download `aero-windows-x86_64.zip` from [GitHub releases](https://github.com/DevAnimecx/aerobrowser/releases/latest)
-2. Extract `aero.exe`
-3. Add to PATH:
-   ```powershell
-   [Environment]::SetEnvironmentVariable("PATH", $env:PATH + ";C:\path\to\aero", "User")
-   ```
-
-#### Option 3: Build from source
-```powershell
-git clone https://github.com/DevAnimecx/aerobrowser.git
-cd aerobrowser
-cargo build --release --locked
-# Binary: target\release\aero.exe
-```
-
-## Verify Installation
+To build with the engine bundled in:
 
 ```sh
-aero --version
-aero --help
+cargo build --release --locked --features bundled-moli
 ```
 
-Expected output:
+This requires the engine archive produced by the release pipeline; see
+[DEPLOYMENT.md](DEPLOYMENT.md).
+
+---
+
+## Verify the install
+
+```sh
+aero --version   # aero 0.5.0
+aero doctor      # engine, sandbox, ports, token, agent configs
 ```
-aero 0.4.0
-Agent browser CLI and MCP server with managed engines and explicit sandbox profiles.
+
+`aero doctor` is the check to run when anything misbehaves. Each failing check
+includes the specific remedy. Include its output in any bug report.
+
+---
+
+## Then
+
+```sh
+aero connect opencode --install
 ```
 
-## Next Steps
+Restart your agent. See [QUICKSTART.md](QUICKSTART.md) for the full walkthrough.
 
-After installation:
+---
 
-1. **Start a browser with CDP debugging port**:
-   ```sh
-   google-chrome --remote-debugging-port=9222 --no-sandbox
-   ```
+## Uninstall
 
-2. **Test the connection**:
-   ```sh
-   aero status
-   ```
+```sh
+rm ~/.local/bin/aero
+rm -rf ~/.aero                      # engine cache and generated token
+```
 
-3. **Connect to an agent**:
-   ```sh
-   aero connect opencode --install
-   ```
-
-See [Quickstart](QUICKSTART.md) for detailed next steps.
-
+Agent configs written by `aero connect` are left in place; remove the `aero` entry
+from your agent's MCP config yourself. Backups of pre-existing config files are
+written next to the original with a `.backup-<uuid>.json` suffix.
