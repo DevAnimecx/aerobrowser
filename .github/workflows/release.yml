@@ -1,4 +1,4 @@
-﻿name: Release
+name: Release
 
 on:
   push:
@@ -7,15 +7,43 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Version to release (e.g.: v0.5.0)"
+        description: "Version to release (must match Cargo.toml, e.g. v0.5.0)"
         required: true
 
+# Write access is scoped to the publish job; builders only need to read.
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  release:
-    name: Build & Release
+  verify-version:
+    name: Verify tag matches the workspace
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.resolve.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: resolve
+        run: |
+          set -euo pipefail
+          CARGO_VERSION=$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1)
+          if [ -z "$CARGO_VERSION" ]; then
+            echo "::error::could not read version from Cargo.toml"; exit 1
+          fi
+          TAG="${GITHUB_REF#refs/tags/}"
+          if [ -z "$TAG" ]; then TAG="${{ inputs.version }}"; fi
+          # Publishing v9.9.9 with a 0.5.0 binary would make every checksum wrong.
+          if [ "$TAG" != "v${CARGO_VERSION}" ]; then
+            echo "::error::tag '$TAG' does not match Cargo.toml version 'v${CARGO_VERSION}'"
+            exit 1
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Publishing $TAG"
+
+  build:
+    name: Build ${{ matrix.artifact }}
+    needs: verify-version
+    permissions:
+      contents: read
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -24,191 +52,215 @@ jobs:
           - os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
             artifact: aero-linux-x86_64
-            ext: ""
           - os: ubuntu-22.04
             target: aarch64-unknown-linux-gnu
             artifact: aero-linux-aarch64
-            ext: ""
-          - os: macos-14
-            target: x86_64-apple-darwin
-            artifact: aero-macos-x86_64
-            ext: ""
           - os: macos-14
             target: aarch64-apple-darwin
             artifact: aero-macos-aarch64
-            ext: ""
+          - os: macos-13
+            target: x86_64-apple-darwin
+            artifact: aero-macos-x86_64
           - os: windows-2022
             target: x86_64-pc-windows-msvc
             artifact: aero-windows-x86_64.zip
-            ext: ".zip"
-          - os: windows-2022
+          - os: windows-11-arm
             target: aarch64-pc-windows-msvc
             artifact: aero-windows-aarch64.zip
-            ext: ".zip"
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Rust (Linux/macOS)
-        if: runner.os != 'Windows'
-        uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
 
-      - name: Install Rust (Windows)
-        if: runner.os == 'Windows'
-        uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
         with:
-          targets: ${{ matrix.target }}
+          key: ${{ matrix.target }}
 
-      - name: Install cross-compilation dependencies (Linux)
-        if: matrix.os == 'ubuntu-22.04' && matrix.target == 'aarch64-unknown-linux-gnu'
+      - name: Install cross-compilation dependencies
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
         run: |
           sudo apt-get update
           sudo apt-get install -y gcc-aarch64-linux-gnu
 
-      - name: Install cross-compilation dependencies (macOS Intel on ARM)
-        if: matrix.os == 'macos-14' && matrix.target == 'x86_64-apple-darwin'
-        run: rustup target add x86_64-apple-darwin
+      - name: Build
+        run: cargo build --release --locked --target ${{ matrix.target }}
 
-      - name: Build (Linux/macOS)
-        if: runner.os != 'Windows'
+      - name: Stage artifact
+        shell: bash
         run: |
-          if [[ "${{ matrix.target }}" == "${{ runner.os }}"* ]]; then
-            cargo build --release --locked
+          set -euo pipefail
+          mkdir -p dist
+          BIN="target/${{ matrix.target }}/release/aero"
+          [ -f "$BIN" ] || BIN="target/${{ matrix.target }}/release/aero.exe"
+          if [ ! -f "$BIN" ]; then
+            echo "::error::no built binary at $BIN"; exit 1
+          fi
+          ARTIFACT="${{ matrix.artifact }}"
+          if [ "${ARTIFACT##*.}" = "zip" ]; then
+            # BSL-1.1 redistribution requires the notice to travel with the binary.
+            zip -j "dist/$ARTIFACT" "$BIN" LICENSE THIRD-PARTY-NOTICES.md README.md
           else
-            cargo build --release --locked --target ${{ matrix.target }}
+            cp "$BIN" "dist/$ARTIFACT"
+            cp LICENSE "dist/${ARTIFACT}.LICENSE"
           fi
 
-      - name: Build (Windows)
-        if: runner.os == 'Windows'
-        run: cargo build --release --locked
-
-      - name: Determine binary path
-        id: binary
+      - name: Smoke test the binary
+        shell: bash
         run: |
-          if [[ "$RUNNER_OS" == "Linux" ]]; then
-            if [[ "${{ matrix.target }}" == "aarch64-unknown-linux-gnu" ]]; then
-              echo "path=target/aarch64-unknown-linux-gnu/release/aero" >> $GITHUB_OUTPUT
-            else
-              echo "path=target/release/aero" >> $GITHUB_OUTPUT
-            fi
-          elif [[ "$RUNNER_OS" == "macOS" ]]; then
-            if [[ "${{ matrix.target }}" == "x86_64-apple-darwin" ]]; then
-              echo "path=target/x86_64-apple-darwin/release/aero" >> $GITHUB_OUTPUT
-            else
-              echo "path=target/release/aero" >> $GITHUB_OUTPUT
-            fi
+          set -euo pipefail
+          if [ "${{ matrix.os }}" = "windows-2022" ] || [ "${{ matrix.os }}" = "windows-11-arm" ]; then
+            BIN="target/${{ matrix.target }}/release/aero.exe"
           else
-            echo "path=target/release/aero.exe" >> $GITHUB_OUTPUT
+            BIN="target/${{ matrix.target }}/release/aero"
+            chmod +x "$BIN"
           fi
+          "$BIN" --version
+          "$BIN" doctor --json > doctor.json
+          echo "doctor produced $(wc -c < doctor.json) bytes"
 
-      - name: Create dist directory
-        run: mkdir -p dist
-
-      - name: Package binary (Linux/macOS)
-        if: runner.os != 'Windows'
-        run: cp "${{ steps.binary.outputs.path }}" "dist/${{ matrix.artifact }}"
-
-      - name: Package binary (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          Compress-Archive -Path "${{ steps.binary.outputs.path }}" -DestinationPath "dist/${{ matrix.artifact }}"
-
-      - name: Strip symbols (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          if [[ -f "dist/${{ matrix.artifact }}" ]]; then
-            strip "dist/${{ matrix.artifact }}" || true
-          fi
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.artifact }}
-          path: dist/${{ matrix.artifact }}
+          name: dist-${{ matrix.artifact }}
+          path: dist/*
+          if-no-files-found: error
+
+  checksums:
+    name: Checksums and provenance
+    needs: [verify-version, build]
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ needs.verify-version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dist-*
+          merge-multiple: true
+          path: ./dist
+
+      - name: Generate SHA256SUMS
+        run: |
+          set -euo pipefail
+          cd dist
+          # Every filename the installers will look up must appear here.
+          sha256sum aero-* > SHA256SUMS
+          mv SHA256SUMS ../
+          cat SHA256SUMS
+          # A file listed but absent would make verification silently impossible.
+          while read -r _ name; do
+            if [ ! -f "dist/$name" ]; then
+              echo "::error::SHA256SUMS lists $name but it was not built"
+              exit 1
+            fi
+          done < SHA256SUMS
+
+      - name: Generate the SBOM
+        run: python scripts/generate-sbom.py
+
+      - name: Summarize provenance
+        id: provenance
+        run: |
+          set -euo pipefail
+          {
+            echo "### Build provenance"
+            echo
+            echo "| Field | Value |"
+            echo "| --- | --- |"
+            echo "| Tag | \`${{ needs.verify-version.outputs.tag }}\` |"
+            echo "| Commit | \`${{ github.sha }}\` |"
+            echo "| Workflow run | [\`${{ github.run_number }}\`](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) |"
+            echo "| Rust | \`$(rustc --version)\` |"
+            echo ""
+            echo "Verify a download:"
+            echo
+            echo '```sh'
+            echo "sha256sum -c SHA256SUMS"
+            echo '```'
+          } > PROVENANCE.md
+          cat PROVENANCE.md
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-metadata
+          path: |
+            SHA256SUMS
+            PROVENANCE.md
+            docs/SBOM.cdx.json
+          if-no-files-found: error
 
   publish:
-    name: Publish Release
-    needs: release
+    name: Publish release
+    needs: [verify-version, checksums]
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/') || github_event_name == 'workflow_dispatch'
-
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
-
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
+          pattern: dist-*
+          merge-multiple: true
           path: ./artifacts
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-metadata
+          path: ./metadata
 
-      - name: Create GitHub Release
+      - name: Publish
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.verify-version.outputs.tag }}
         run: |
-          TAG="${GITHUB_REF#refs/tags/}"
-          [[ -z "$TAG" ]] && TAG="${{ inputs.version }}"
-
-          gh release create "$TAG" \
-            artifacts/aero-linux-x86_64 \
-            artifacts/aero-linux-aarch64 \
-            artifacts/aero-macos-x86_64 \
-            artifacts/aero-macos-aarch64 \
-            "artifacts/aero-windows-x86_64.zip" \
-            "artifacts/aero-windows-aarch64.zip" \
-            --title "AeroBrowser $TAG by Blackvault Technology" \
-            --body "$(cat <<'EOF'
-## AeroBrowser $TAG
-
-**The agent's personal browser.** Developed by [Blackvault Technology](https://blackvaulttech.netlify.app/) (Adarsh Kushwah). Originally by [DevAnimecx/aerobrowser](https://github.com/DevAnimecx/aerobrowser).
-
-### 🚀 One-Line Install
-```sh
-# Linux/macOS
-curl -sSf https://get.aerobrowser.dev | sh
-
-# Windows PowerShell
-irm https://get.aerobrowser.dev | iex
-
-# With agent auto-config + Moli engine
-curl -sSf https://get.aerobrowser.dev | sh -- --agent opencode --install-engine
-```
-
-### Connect to your agent
-```sh
-aero connect opencode --install          # Configure OpenCode
-aero connect claude-code --install       # Configure Claude Code
-aero connect cursor --install            # Configure Cursor
-```
-
-### Documentation
-- [Quick Start](https://github.com/DevAnimecx/aerobrowser#quick-start)
-- [API Reference](https://github.com/DevAnimecx/aerobrowser/blob/main/docs/API.md)
-- [Agent Skill](https://github.com/DevAnimecx/aerobrowser/blob/main/docs/AGENT-SKILL.md)
-EOF
-)"
-
-  verify:
-    name: Verify Release
-    needs: publish
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Download installer
-        run: |
-          curl -sSL https://raw.githubusercontent.com/DevAnimecx/aerobrowser/main/scripts/install.sh -o install.sh
-          chmod +x install.sh
-
-      - name: Download release artifact
-        run: |
-          curl -sSL -o aero-test "https://github.com/DevAnimecx/aerobrowser/releases/download/v0.5.0/aero-linux-x86_64" || true
-
-      - name: Verify binary exists
-        run: |
-          if [ -f aero-test ]; then
-            chmod +x aero-test
-            ./aero-test --version
-          else
-            echo "Binary not found in release (may not exist yet)"
+          set -euo pipefail
+          shopt -s nullglob
+          files=(artifacts/aero-*)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "::error::no artifacts to publish"; exit 1
           fi
+          printf 'Publishing %s with %d artifact(s)\n' "$TAG" "${#files[@]}"
+
+          {
+            cat metadata/PROVENANCE.md
+            echo
+            echo "### Install"
+            echo
+            echo '```sh'
+            echo "# Linux / macOS"
+            echo "curl -fsSL https://raw.githubusercontent.com/DevAnimecx/aerobrowser/master/scripts/install.sh | sh"
+            echo '```'
+            echo
+            echo '```powershell'
+            echo "# Windows PowerShell"
+            echo "irm https://raw.githubusercontent.com/DevAnimecx/aerobrowser/master/scripts/install.ps1 | iex; Install-AeroBrowser -Agent opencode"
+            echo '```'
+            echo
+            echo "Both installers verify the \`SHA256SUMS\` digest published with this release."
+            echo
+            echo "### Verify your install"
+            echo
+            echo '```sh'
+            echo "aero doctor"
+            echo '```'
+            echo
+            echo "### Licensing"
+            echo
+            echo "Business Source License 1.1 with an Additional Use Grant. Free below USD 10M annual"
+            echo "revenue; commercial use above that, or offering browser automation as a service,"
+            echo "requires a paid license. See [LICENSE](https://github.com/DevAnimecx/aerobrowser/blob/master/LICENSE)."
+          } > NOTES.md
+
+          gh release create "$TAG" "${files[@]}" metadata/SHA256SUMS \
+            --verify-tag --title "AeroBrowser $TAG" --notes-file NOTES.md
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-path: artifacts/aero-*
