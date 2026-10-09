@@ -1,0 +1,13 @@
+# Default owners for everything not matched below.
+* @DevAnimecx
+
+# Files that define the trust boundary. Changes here need a security review
+# before merge: network policy, sandbox enforcement, auth, and artifact paths.
+/src/sandbox.rs    @DevAnimecx
+/src/engine.rs     @DevAnimecx
+/src/auth.rs       @DevAnimecx
+/src/artifacts.rs  @DevAnimecx
+/src/http.rs       @DevAnimecx
+/docs/SECURITY.md  @DevAnimecx
+SECURITY.md        @DevAnimecx
+/CODE_OF_CONDUCT.md @DevAnimecx
