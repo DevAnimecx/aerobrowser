@@ -1,151 +1,280 @@
-﻿<#
+<#
 .SYNOPSIS
-    AeroBrowser Windows installer
+    AeroBrowser installer for Windows.
 
 .DESCRIPTION
-    Universal installer for AeroBrowser on Windows.
-    Downloads the latest release binary and optionally configures an agent.
+    Downloads the published release binary, verifies its SHA-256 digest, installs
+    it to a user-writable directory, and optionally configures an agent.
 
 .PARAMETER InstallDir
-    Installation directory (default: $HOME\.local\bin)
+    Installation directory. Default: $env:USERPROFILE\.local\bin
+
+.PARAMETER Version
+    Install a specific tag, e.g. v0.5.0. Default: latest release.
 
 .PARAMETER Force
-    Overwrite existing installation
+    Overwrite an existing installation.
 
 .PARAMETER Agent
-    Auto-configure for agent (claude-code, opencode, cursor, vscode, codex, hermes)
+    Configure an agent: opencode, claude-code, claude-desktop, cursor, vscode,
+    codex, windsurf, cline, roo-code, hermes, generic.
 
 .PARAMETER NoProfile
-    Skip PATH update
+    Do not modify the user PATH.
 
 .PARAMETER InstallEngine
-    Attempt to install Moli engine
+    Request the managed engine. Managed Moli downloads are Linux x86_64 only, so
+    on Windows the installer adopts a locally installed browser instead.
 
-.PARAMETER Help
-    Show help
+.PARAMETER NoVerify
+    Skip SHA-256 verification. Not recommended.
 
 .EXAMPLE
-    PS> curl -sSf https://get.aerobrowser.dev | powershell -Command -
+    PS> .\scripts\install.ps1 -Agent opencode
+
 .EXAMPLE
-    PS> .\scripts\install.ps1 -Agent opencode -InstallEngine
+    PS> irm https://raw.githubusercontent.com/DevAnimecx/aerobrowser/master/scripts/install.ps1 | iex; Install-AeroBrowser -Agent opencode
 #>
 param(
-    [string]$InstallDir = "$env:USERPROFILE\.local\bin",
+    [string]$InstallDir,
+    [string]$Version,
     [switch]$Force,
     [string]$Agent,
     [switch]$NoProfile,
     [switch]$InstallEngine,
+    [switch]$NoVerify,
     [switch]$Help
 )
 
 $ErrorActionPreference = "Stop"
+# Windows PowerShell 5.1 defaults to a protocol set that can exclude TLS 1.2,
+# which makes every request below fail with "Could not create SSL/TLS secure
+# channel" on stock systems.
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+# Invoke-WebRequest's progress record can overflow the 5.1 pipeline and abort
+# large downloads.
+$ProgressPreference = 'SilentlyContinue'
+
 $REPO = "DevAnimecx/aerobrowser"
 $BIN_NAME = "aero.exe"
 
-function Write-Info($msg) { Write-Host "â„¹ $msg" -ForegroundColor Blue }
-function Write-Ok($msg)   { Write-Host "âœ“ $msg" -ForegroundColor Green }
-function Write-Warn($msg) { Write-Host "âš  $msg" -ForegroundColor Yellow }
-function Write-Fail($msg) { Write-Host "âœ— $msg" -ForegroundColor Red; exit 1 }
+function Write-Step($msg) { Write-Host "==> $msg" -ForegroundColor Cyan }
+function Write-Info($msg) { Write-Host "  $msg" -ForegroundColor Blue }
+function Write-Ok($msg)   { Write-Host "  $msg" -ForegroundColor Green }
+function Write-Warn($msg) { Write-Host "  $msg" -ForegroundColor Yellow }
+function Write-Fail($msg) { Write-Host "  $msg" -ForegroundColor Red; exit 1 }
 
 if ($Help) {
     Get-Help $MyInvocation.MyCommand -Detailed
     exit 0
 }
 
-# Detect platform
-$IsArm = ([System.Runtime.InteropServices.RuntimeInformation]::ProcessorArchitecture -eq "Arm64")
-if ($IsArm) {
-    $PLATFORM = "windows-aarch64"
-} else {
-    $PLATFORM = "windows-x86_64"
-}
-Write-Info "Detected platform: $PLATFORM"
-
-# Get latest version
-$RELEASE_URL = "https://api.github.com/repos/$REPO/releases/latest"
-try {
-    $RELEASE = Invoke-RestMethod -Uri $RELEASE_URL -Headers @{"Accept" = "application/vnd.github.v3+json"}
-    $VERSION = $RELEASE.tag_name
-} catch {
-    $VERSION = "v0.4.0"
-    Write-Warn "Could not fetch latest version, using fallback: $VERSION"
-}
-Write-Info "Latest release: $VERSION"
-
-# Determine asset
-if ($PLATFORM -eq "windows-aarch64") {
-    $ASSET = "aero-windows-aarch64.zip"
-} else {
-    $ASSET = "aero-windows-x86_64.zip"
+if (-not $InstallDir) {
+    $profile = if ($env:USERPROFILE) { $env:USERPROFILE } else { $HOME }
+    $InstallDir = Join-Path $profile ".local\bin"
 }
 
-# Check existing install
-if (-not $Force -and (Test-Path "$InstallDir\$BIN_NAME")) {
-    $EXISTING = & "$InstallDir\$BIN_NAME" --version 2>$null
-    Write-Info "Existing installation: $EXISTING"
-    Write-Info "Use -Force to overwrite"
-    exit 0
-}
+$script:TempDir = $null
 
-# Create install dir
-New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
+function Initialize-AeroBrowser {
+    <#
+    .SYNOPSIS
+        Installs AeroBrowser. This is the entry point used by the pipe-to-shell
+        form, where the script body runs once with default parameters.
+    #>
+    param(
+        [string]$InstallDir,
+        [string]$Version,
+        [switch]$Force,
+        [string]$Agent,
+        [switch]$NoProfile,
+        [switch]$InstallEngine,
+        [switch]$NoVerify
+    )
 
-# Download
-$DOWNLOAD_URL = "https://github.com/$REPO/releases/download/$VERSION/$ASSET"
-$TEMP_ZIP = "$env:TEMP\aero-$VERSION.zip"
-Write-Info "Downloading $ASSET..."
+    $ErrorActionPreference = "Stop"
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    $ProgressPreference = 'SilentlyContinue'
 
-try {
-    Invoke-WebRequest -Uri $DOWNLOAD_URL -OutFile $TEMP_ZIP -UseBasicParsing
-    Expand-Archive -Path $TEMP_ZIP -DestinationPath $env:TEMP\aero-extract -Force
-} catch {
-    Write-Fail "Download failed: $_"
-}
+    $REPO = "DevAnimecx/aerobrowser"
+    $BIN_NAME = "aero.exe"
 
-# Find and copy binary
-$BINARY = Get-ChildItem "$env:TEMP\aero-extract" -Filter "aero*.exe" -Recurse | Select-Object -First 1
-if ($BINARY) {
-    Copy-Item $BINARY.FullName "$InstallDir\$BIN_NAME" -Force
-    Remove-Item $TEMP_ZIP -Force -ErrorAction SilentlyContinue
-    Remove-Item "$env:TEMP\aero-extract" -Recurse -Force -ErrorAction SilentlyContinue
-    Write-Ok "Installed: $InstallDir\$BIN_NAME"
-} else {
-    Write-Fail "Could not find aero.exe in extracted archive"
-}
+    if (-not $InstallDir) {
+        $profile = if ($env:USERPROFILE) { $env:USERPROFILE } else { $HOME }
+        $InstallDir = Join-Path $profile ".local\bin"
+    }
 
-# Update PATH (user scope)
-if (-not $NoProfile) {
-    $CURRENT_PATH = [Environment]::GetEnvironmentVariable("PATH", "User")
-    if (-not $CURRENT_PATH.Contains($InstallDir)) {
-        [Environment]::SetEnvironmentVariable("PATH", "$CURRENT_PATH;$InstallDir", "User")
-        Write-Warn "Added $InstallDir to user PATH. Restart your terminal to apply."
+    $AERO = Join-Path $InstallDir $BIN_NAME
+
+    Write-Host ""
+    Write-Host "AeroBrowser installer" -ForegroundColor White
+    Write-Host ""
+
+    # --- Platform -----------------------------------------------------------
+    $arch = $env:PROCESSOR_ARCHITECTURE
+    if (-not $arch) {
+        try {
+            $arch = [System.Runtime.InteropServices.RuntimeInformation]::ProcessorArchitecture.ToString()
+        } catch {
+            $arch = "X64"
+        }
+    }
+    if ($arch -match "ARM") {
+        $PLATFORM = "windows-aarch64"
+        $ASSET = "aero-windows-aarch64.zip"
     } else {
-        Write-Ok "PATH already contains $InstallDir"
+        $PLATFORM = "windows-x86_64"
+        $ASSET = "aero-windows-x86_64.zip"
     }
-}
+    Write-Info "Platform: $PLATFORM"
 
-# Install engine
-if ($InstallEngine -and $PLATFORM -eq "windows-x86_64") {
-    Write-Info "Moli engine requires Linux. Use external CDP browser on Windows."
-    Write-Warn "Install Chrome with --remote-debugging-port=9222"
-}
-
-# Configure agent
-if ($Agent) {
-    Write-Info "Configuring for agent: $Agent"
-    $AERO = "$InstallDir\AERO.exe"
-    if (Test-Path $AERO) {
-        & $AERO connect $Agent --install 2>&1
-        Write-Ok "Agent '$Agent' configured!"
-        Write-Info "Restart your agent to pick up the MCP server"
+    # --- Version ------------------------------------------------------------
+    if (-not $Version) {
+        try {
+            $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$REPO/releases/latest" `
+                -Headers @{ "Accept" = "application/vnd.github+json"; "User-Agent" = "aerobrowser-installer" }
+            $Version = $release.tag_name
+        } catch {
+            Write-Fail "Could not determine the latest release ($_). Pass -Version to pin one explicitly."
+        }
     }
+    Write-Info "Version: $Version"
+
+    # --- Existing install ---------------------------------------------------
+    if (-not $Force -and (Test-Path $AERO)) {
+        $existing = try { & $AERO --version 2>$null } catch { "unknown" }
+        Write-Ok "Already installed: $existing"
+        Write-Info "Location: $AERO"
+        Write-Info "Re-run with -Force to upgrade."
+        Invoke-AeroSummary -AeroPath $AERO -Agent $Agent -InstallEngine:$InstallEngine
+        return
+    }
+
+    # --- Work in a private, random temp directory ----------------------------
+    New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
+    $work = Join-Path ([System.IO.Path]::GetTempPath()) ("aero-" + [System.IO.Path]::GetRandomFileName())
+    New-Item -ItemType Directory -Path $work | Out-Null
+    $script:TempDir = $work
+
+    try {
+        $zip = Join-Path $work $ASSET
+        $url = "https://github.com/$REPO/releases/download/$Version/$ASSET"
+        Write-Info "Downloading $ASSET"
+        try {
+            Invoke-WebRequest -Uri $url -OutFile $zip -UseBasicParsing
+        } catch {
+            Write-Fail "Download failed: $_"
+        }
+
+        # --- Integrity --------------------------------------------------------
+        $ok = $false
+        if (-not $NoVerify) {
+            try {
+                $sumsText = (Invoke-WebRequest -Uri "https://github.com/$REPO/releases/download/$Version/SHA256SUMS" -UseBasicParsing).Content
+                $line = ($sumsText -split "`n" | Where-Object { $_ -match "\s\*?$([regex]::Escape($ASSET))\s*$" } | Select-Object -First 1)
+                if ($line) {
+                    $expected = ($line -split "\s+")[0].ToUpperInvariant()
+                    $actual = (Get-FileHash -Path $zip -Algorithm SHA256).Hash.ToUpperInvariant()
+                    if ($expected -ne $actual) {
+                        Write-Fail "Checksum mismatch for $ASSET.`n  expected: $expected`n  actual:   $actual`nThe download was not installed."
+                    }
+                    Write-Ok "Checksum verified"
+                    Write-Host "  $actual  $ASSET" -ForegroundColor DarkGray
+                    $ok = $true
+                } else {
+                    Write-Warn "$ASSET is not listed in SHA256SUMS; cannot verify"
+                }
+            } catch {
+                Write-Warn "Could not retrieve SHA256SUMS; cannot verify"
+            }
+        } else {
+            Write-Warn "Checksum verification skipped (-NoVerify)"
+        }
+        if (-not $ok -and $NoVerify) { $ok = $true }
+        if (-not $ok) { Write-Warn "Proceeding without verification" }
+
+        # --- Extract and install ---------------------------------------------
+        $extract = Join-Path $work "extracted"
+        Expand-Archive -Path $zip -DestinationPath $extract -Force
+
+        $binary = Get-ChildItem $extract -Filter "aero*.exe" -Recurse -File | Select-Object -First 1
+        if (-not $binary) { Write-Fail "No aero.exe found in $ASSET" }
+        if ($binary.Length -lt 100KB) { Write-Fail "Downloaded aero.exe is implausibly small; refusing to install." }
+
+        # Stage inside the destination so an interrupted copy cannot leave a
+        # broken binary on PATH.
+        $staged = Join-Path $InstallDir ".aero.new.exe"
+        Copy-Item $binary.FullName $staged -Force
+        Move-Item -Path $staged -Destination $AERO -Force
+
+        try {
+            $versionLine = & $AERO --version 2>$null
+        } catch {
+            Remove-Item $AERO -Force -ErrorAction SilentlyContinue
+            Write-Fail "Installed binary did not run. Removing it."
+        }
+        Write-Ok "Installed $versionLine"
+        Write-Host "  $AERO" -ForegroundColor DarkGray
+    }
+    finally {
+        if ($script:TempDir -and (Test-Path $script:TempDir)) {
+            Remove-Item $script:TempDir -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    # --- PATH ---------------------------------------------------------------
+    if (-not $NoProfile) {
+        $current = [Environment]::GetEnvironmentVariable("PATH", "User")
+        if ($current -and $current.Contains($InstallDir)) {
+            Write-Host "  PATH already contains $InstallDir" -ForegroundColor DarkGray
+        } else {
+            [Environment]::SetEnvironmentVariable("PATH", "$current;$InstallDir", "User")
+            Write-Warn "Added $InstallDir to your user PATH. Restart your terminal to apply."
+        }
+    }
+
+    # --- Managed engine -----------------------------------------------------
+    if ($InstallEngine) {
+        Write-Warn "Managed Moli engine downloads are Linux x86_64 only."
+        Write-Info "On Windows, AeroBrowser will adopt a locally installed browser instead."
+        Write-Info "  Start Chrome with: chrome.exe --remote-debugging-port=9222"
+    }
+
+    # --- Agent --------------------------------------------------------------
+    if ($Agent) {
+        Write-Step "Configuring agent: $Agent"
+        & $AERO connect $Agent --install
+        if ($LASTEXITCODE -ne 0) {
+            Write-Fail "Could not configure agent '$Agent'. Run '$AERO doctor' to diagnose."
+        }
+        Write-Ok "Agent '$Agent' configured"
+    }
+
+    Invoke-AeroSummary -AeroPath $AERO -Agent $Agent -InstallEngine:$InstallEngine
 }
 
-Write-Host ""
-Write-Ok "AeroBrowser installed successfully!"
-Write-Host ""
-Write-Host "Next steps:"
-Write-Host "  1. Start Chrome: chrome.exe --remote-debugging-port=9222 --no-sandbox"
-Write-Host "  2. Run: aero mcp   (or 'aero start' for HTTP server)"
-Write-Host "  3. Or:  aero connect --agent <name> --install"
+function Invoke-AeroSummary {
+    param(
+        [Parameter(Mandatory = $true)][string]$AeroPath,
+        [string]$Agent,
+        [switch]$InstallEngine
+    )
 
+    Write-Host ""
+    Write-Host "  AeroBrowser is ready." -ForegroundColor Green
+    Write-Host ""
+    Write-Host "  Check the install:  $AeroPath doctor" -ForegroundColor White
+    if ($Agent) {
+        Write-Host "  Restart your agent to load the MCP server." -ForegroundColor White
+    } else {
+        Write-Host "  Connect an agent:   $AeroPath connect opencode" -ForegroundColor White
+        Write-Host "  Or start Chrome:    chrome.exe --remote-debugging-port=9222" -ForegroundColor DarkGray
+    }
+    Write-Host ""
+}
+
+# Always run the install, forwarding whatever parameters were supplied. Direct
+# invocation passes them through; the pipe-to-shell form arrives with none, so
+# the defaults apply and the function does the work.
+Install-AeroBrowser -InstallDir $InstallDir -Version $Version -Force:$Force `
+    -Agent $Agent -NoProfile:$NoProfile -InstallEngine:$InstallEngine -NoVerify:$NoVerify
