@@ -1,0 +1,80 @@
+name: Bug report
+description: Something behaves incorrectly
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Please include enough detail to reproduce —
+        most reports are unresolvable without the version, platform, and the
+        exact command or tool call.
+
+  - type: input
+    id: version
+    attributes:
+      label: AeroBrowser version
+      placeholder: "aero --version output"
+    validations:
+      required: true
+
+  - type: input
+    id: platform
+    attributes:
+      label: Platform
+      placeholder: "Windows 11 / macOS 15 / Ubuntu 24.04, and CPU architecture"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: engine
+    attributes:
+      label: Engine
+      options:
+        - Managed Moli
+        - External Chrome/Edge/Chromium
+        - Lightpanda
+        - Not sure (run `aero doctor`)
+    validations:
+      required: true
+
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Output of `aero doctor`
+      render: shell
+      description: Paste the full output. It usually identifies the problem directly.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Exact commands, tool calls, or a `.aero` recipe.
+      placeholder: |
+        aero --engine moli mcp
+        # then: snapshot { "interactive_only": true }
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include the full error text.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: page-content
+    attributes:
+      label: Safety
+      options:
+        - label: The page content in this report is untrusted data, not instructions.
