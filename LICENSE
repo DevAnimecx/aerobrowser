@@ -1,54 +1,102 @@
 ﻿Business Source License 1.1
 
-Copyright (c) 2026 Blackvault Technology, Inc.
-Copyright (c) 2026 AeroBrowser contributors
+Licensor:      Blackvault Technology, Inc.
+Licensed Work: AeroBrowser
+              Copyright (c) 2026 Blackvault Technology, Inc.
+              Copyright (c) 2026 AeroBrowser contributors
+Change Date:  2030-01-01
+Change License: Apache License, Version 2.0
 
-This License allows you to copy and modify the software for any purpose,
-including commercial use, but prevents it from being used in a product that
-competes with the commercial offering without a commercial license.
+Notice
 
-Terms:
-1. Redistribution and use in source and binary forms, with or without
-   modification, are permitted provided that the following conditions are met:
-   
-   a. Redistributions of source code must retain the copyright notice, this
-      list of conditions, and the additional restrictions described below.
-      
-   b. Redistributions in binary form must reproduce the copyright notice,
-      this list of conditions, and the additional restrictions in the
-      documentation and/or other materials provided with the distribution.
+The Licensor hereby grants you the right to copy, modify, create derivative
+works, redistribute, and make non-production use of the Licensed Work. The
+Licensor may make an Additional Use Grant, above, permitting limited production
+use.
 
-2. Additional Restrictions:
-   a. The software may not be used in a product that competes with the
-      commercial AeroBrowser offering by Blackvault Technology, Inc.
-      
-   b. Production use by corporations with annual revenue exceeding
-      $10 million USD requires a commercial license.
-      
-   c. Hosting the software as a service (SaaS) requires a commercial license.
+Effective on the Change Date, or the fourth anniversary of the first publicly
+available distribution of a specific version of the Licensed Work under this
+License, whichever comes first, the Licensor hereby grants you rights under the
+terms of the Change License, and the rights granted in the paragraph above
+terminate.
 
-3. Free Use:
-   a. The software is free for personal, educational, non-commercial, and
-      internal business use (under the $10M revenue threshold).
-      
-   b. Open source projects may use this software per the terms above.
+If your use of the Licensed Work does not comply with the requirements currently
+in effect as described in this License, you must purchase a commercial license
+from the Licensor, its affiliated entities, or authorized resellers, or you must
+refrain from using the Licensed Work.
 
-4. Commercial Licensing:
-   Commercial licenses are available from:
-   sales@https://blackvaulttech.netlify.app/
-   
-   A commercial license grants the right to:
-   - Remove the additional restrictions in Section 2
-   - Use in high-revenue corporate environments
-   - Use in SaaS offerings
-   - Receive commercial support
+All copies of the original and modified Licensed Work, and derivative works of
+the Licensed Work, are subject to this License. This License applies separately
+for each version of the Licensed Work and the Change Date may vary for each
+version of the Licensed Work released by Licensor.
 
-5. Notice:
-   This software is provided "as is", without warranty of any kind.
+You must conspicuously display this License on each original or modified copy of
+the Licensed Work. If you receive the Licensed Work in original or modified form
+from a third party, the terms and conditions set forth in this License apply to
+your use of that work.
 
----
+Any use of the Licensed Work in violation of this License will automatically
+terminate your rights under this License for the current and all other versions
+of the Licensed Work.
 
-For questions about licensing, contact: sales@https://blackvaulttech.netlify.app/
-Company: Blackvault Technology, Inc.
-Developer: Adarsh Kushwah
+This License does not grant you any right in any trademark or logo of Licensor
+or its affiliates (provided that you may use a trademark or logo of Licensor as
+expressly required by this License).
 
+TO THE EXTENT PERMITTED BY APPLICABLE LAW, THE LICENSED WORK IS PROVIDED ON AN
+"AS IS" BASIS. LICENSOR HEREBY DISCLAIMS ALL WARRANTIES AND CONDITIONS, EXPRESS
+OR IMPLIED, INCLUDING (WITHOUT LIMITATION) WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, AND TITLE.
+
+
+Additional Use Grant
+
+The Licensor hereby grants you a non-exclusive, royalty-free, worldwide license
+to use the Licensed Work in Production, subject to the Additional Use Grant
+conditions below, for any purpose other than offering the Licensed Work to third
+parties as a hosted or managed service competing with Licensor's commercial
+offering.
+
+Conditions for the Additional Use Grant:
+
+  (a) Permitted Production Use. You may use the Licensed Work in production
+      internal business operations, including within your own products and
+      services that you offer to your own customers, provided that you do not
+      resell, sublicense, or provide the Licensed Work itself as a standalone
+      product, SDK, or competitor service.
+
+  (b) Permitted Entities. The Additional Use Grant applies only while the
+      organization using the Licensed Work has annual gross revenue below
+      USD 10,000,000 for its most recent completed fiscal year.
+
+  (c) Non-production use is unrestricted. Personal, educational, research,
+      evaluation, and open-source use is permitted for all organizations
+      without the revenue limitation in (b).
+
+  (d) Competitive Use Prohibited. The Additional Use Grant does not permit
+      operating a hosted, managed, or embedded service whose primary function
+      is to provide browser automation to third parties, where that service
+      competes with Licensor's commercial offering.
+
+  (e) Attribution. You must retain the copyright notice, this License, and the
+      Additional Use Grant conditions in all copies and in any documentation or
+      other materials provided with your distribution.
+
+  (f) No Trademark Use. This grant conveys no trademark or branding rights.
+
+
+Commercial Licensing
+
+Production use outside the conditions of the Additional Use Grant requires a
+paid commercial license from Licensor or an authorized reseller. A commercial
+license additionally:
+
+  - waives the revenue threshold in (b) and the competitive-use restriction in (d)
+  - grants trademark and attribution rights
+  - includes warranty, support, and service-level commitments
+  - covers the embedded browser engine and all redistributed third-party notices
+
+Contact: licensing@blackvaulttech.netlify.app
+
+Licensed Work copyright and license information is also published at
+https://github.com/DevAnimecx/aerobrowser/blob/master/LICENSE
