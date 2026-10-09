@@ -1,3 +1,35 @@
 /target/
 .env
 *.log
+
+# Build and packaging output
+/package-*/
+/artifacts/
+/dist/
+
+# Local agent/tooling state (not part of the distributed product)
+/.opencode/
+/.aero/
+
+# Files written next to user agent configs at runtime
+*.aero-skill.md
+*.backup-*.json
+
+# Transient build/CI console dumps
+*-console.txt
+*-build.txt
+chrome.log
+fixture.log
+aero.log
+fixture-server.log
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Python bytecode from the check scripts
+__pycache__/
+*.pyc
