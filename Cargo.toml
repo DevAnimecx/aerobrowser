@@ -1,0 +1,47 @@
+[package]
+name = "aerobrowser"
+version = "0.5.0"
+edition = "2021"
+license = "BSL-1.1"
+description = "Agent browser CLI and MCP server with managed engines and sandboxed browsing"
+repository = "https://github.com/DevAnimecx/aerobrowser"
+homepage = "https://github.com/DevAnimecx/aerobrowser"
+documentation = "https://github.com/DevAnimecx/aerobrowser"
+keywords = ["mcp", "browser", "chrome", "automation", "agent"]
+categories = ["command-line-utilities", "web-programming"]
+authors = ["Adarsh Kushwah <adarsh@blackvaulttech.netlify.app>"]
+
+[[bin]]
+name = "aero"
+path = "src/main.rs"
+[dependencies]
+anyhow = "1"
+axum = "0.8"
+base64 = "0.22"
+clap = { version = "4", features = ["derive", "env"] }
+futures-util = "0.3"
+reqwest = { version = "0.12", features = ["json"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+shell-words = "1"
+tokio = { version = "1", features = ["full"] }
+tokio-tungstenite = "0.28"
+uuid = { version = "1", features = ["v4"] }
+libc = "0.2"
+sha2 = "0.10"
+flate2 = "1"
+tar = "0.4"
+toml_edit = "0.23"
+serde_yaml_ng = "0.10"
+tokio-util = { version = "0.7", features = ["rt"] }
+
+
+
+[profile.release]
+strip = true
+lto = "thin"
+codegen-units = 1
+
+[features]
+bundled-moli = []
+
