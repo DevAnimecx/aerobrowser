@@ -1,159 +1,205 @@
 # Quickstart
 
-## 1. Install AeroBrowser
+## 1. Install
 
-### Linux / macOS
 ```sh
-curl -sSf https://get.aerobrowser.dev | sh
+# Linux / macOS
+curl -fsSL https://raw.githubusercontent.com/DevAnimecx/aerobrowser/master/scripts/install.sh | sh
 ```
 
-### Windows (PowerShell)
 ```powershell
-irm https://get.aerobrowser.dev | iex
+# Windows PowerShell
+irm https://raw.githubusercontent.com/DevAnimecx/aerobrowser/master/scripts/install.ps1 | iex; Install-AeroBrowser
 ```
 
-Verify:
+Both installers verify the published SHA-256 before installing, confirm the
+download is a native executable, and remove it if it fails to run afterwards.
+
+## 2. Verify the install
+
 ```sh
-aero --version
+aero doctor
 ```
 
-## 2. Start a browser with CDP
+This checks the engine, sandbox support, ports, auth token, and agent config
+paths, and prints the fix for anything that fails. Run `aero doctor --json` for
+machine-readable output. If you are about to file a bug, include this output.
 
-### Linux
-```sh
-google-chrome --remote-debugging-port=9222 --no-sandbox --user-data-dir=/tmp/aero-chrome &
-```
+## 3. Choose an engine
 
-### macOS
-```sh
-/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9222 --no-sandbox &
-```
+### Managed, sandboxed (Linux x86_64 only)
 
-### Windows
-```powershell
-chrome.exe --remote-debugging-port=9222 --no-sandbox
-```
-
-## 3. Connect to your agent
-
-### One-step connect (recommended)
 ```sh
 aero connect opencode --install
 ```
 
-This auto-detects or installs the engine, starts the daemon, and writes your agent config:
-- Claude Code: `aero connect claude-code --install`
-- Cursor: `aero connect cursor --install`
-- VS Code: `aero connect vscode --install`
-- Codex: `aero connect codex --install`
-- Hermes: `aero connect hermes --install`
+Downloads the Moli engine and runs each session in a dedicated worker with
+Landlock and seccomp applied. Nothing to start by hand.
 
-## 4. Start using MCP tools
+### External browser (any platform)
 
-Once your agent is configured and restarted, run:
+Start a Chromium-family browser with a debugging port:
 
 ```sh
-aero mcp --transport stdio
-```
+# Linux
+google-chrome --remote-debugging-port=9222 --no-sandbox --user-data-dir=/tmp/aero-chrome &
 
-Your agent will now have access to 61 MCP tools:
+# macOS
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --remote-debugging-port=9222 &
 
-### Navigate
+# Windows
+chrome.exe --remote-debugging-port=9222
 ```
-aero_navigate(url="https://example.com")
-aero_snapshot()
-aero_status()
-```
-
-### Interact
-```
-aero_click(selector="button.submit")
-aero_fill(selector="#email", value="test@example.com")
-aero_type(selector="#search", text="hello world")
-```
-
-### Extract
-```
-aero_get_text(selector="h1")
-aero_get_attribute(selector="a", attr="href")
-aero_extract({"title": "h1", "links": ["a"]})
-```
-
-### Media
-```
-aero_screenshot(path="page.png")
-aero_screenshot(path="full.png", full_page=true)
-aero_pdf(path="page.pdf")
-```
-
-### Testing
-```
-aero_test(path="tests/example.aero")
-aero_validate(url="https://example.com", checks=[{"selector": "h1", "text_contains": "Example"}])
-```
-
-## 5. HTTP daemon mode (for scripting)
 
 ```sh
-# Terminal 1: start the daemon
-export AERO_TOKEN="$(openssl rand -hex 32)"
-aero start --port 8931
-
-# Terminal 2: use the CLI
-aero open https://example.com
-aero get text h1
-aero screenshot page.png
+aero connect opencode --install
 ```
 
-## Quick Reference
+On Windows and macOS this adopts the browser it finds locally, since managed
+engine downloads are Linux-only. The result reports which engine was chosen in
+`engine` and explains the choice in `platform_note`.
 
-### CLI Commands
+## 4. Connect your agent
+
+```sh
+aero connect opencode        # or claude-code, cursor, vscode, codex, claude-desktop, ...
+```
+
+Then restart your agent. Run `aero profile list` to see every adapter.
+
+## 5. Use the tools
+
+Restart your agent and it will have 62 MCP tools available. Tool names are the
+bare names, with no prefix:
+
+```json
+{"name": "navigate", "arguments": {"url": "https://example.com"}}
+{"name": "snapshot", "arguments": {"interactive_only": true}}
+{"name": "get_text", "arguments": {"selector": "h1"}}
+{"name": "get_attribute", "arguments": {"selector": "a", "attribute": "href"}}
+{"name": "screenshot", "arguments": {"path": "page.png"}}
+{"name": "save_pdf", "arguments": {"path": "page.pdf"}}
+```
+
+To reduce round-trips, send several in one message:
+
+```json
+{"name": "batch", "arguments": {"calls": [
+  {"name": "navigate", "arguments": {"url": "https://example.com/login"}},
+  {"name": "snapshot", "arguments": {"interactive_only": true}},
+  {"name": "fill", "arguments": {"ref": "@e1_4", "value": "user@example.com"}},
+  {"name": "click", "arguments": {"ref": "@e1_5"}}
+]}}
+```
+
+To send only what changed since the last snapshot:
+
+```json
+{"name": "snapshot", "arguments": {"delta": true}}
+```
+
+`aero tools` prints the full inventory. [API.md](API.md) documents every schema.
+
+## 6. Verify a recipe
+
+```sh
+python3 -m http.server 4173 --bind 127.0.0.1 --directory examples   # fixture server
+aero validate examples/login.aero
+aero test examples/login.aero --report results.html
+```
+
+`aero validate` takes a `.aero` recipe file, not a URL. It parses the recipe and
+reports the step count without touching a browser.
+
+---
+
+## Reference
+
+### CLI
+
 | Command | Description |
-|---------|-------------|
-| `aero mcp` | Start MCP server (stdio/http/sse) |
-| `aero start` | Start HTTP daemon with MCP endpoints |
-| `aero open URL` | Navigate to URL |
-| `aero click SELECTOR` | Click element |
-| `aero fill SELECTOR VALUE` | Fill input |
-| `aero get text SELECTOR` | Get element text |
-| `aero screenshot PATH` | Take screenshot |
-| `aero status` | Show browser/session status |
-| `aero connect AGENT` | Configure agent |
-| `aero profile install AGENT` | Generate config file |
-| `aero test PATH` | Run test recipe |
-| `aero validate URL` | Validate page |
-| `aero engine install moli` | Install Moli engine |
+|---|---|
+| `aero doctor` | Diagnose the install; `--json` for machine output |
+| `aero tools` | Print the tool inventory as JSON |
+| `aero mcp` | MCP server over stdio, HTTP, or SSE |
+| `aero start` | HTTP daemon with MCP, SSE, and CLI endpoints |
+| `aero stop` | Shut down the daemon |
+| `aero connect AGENT` | Configure an agent (`--install` to fetch an engine) |
+| `aero profile list` | List sandbox profiles and whether each is implemented |
+| `aero open URL` | Navigate |
+| `aero snapshot` | Accessibility snapshot (`-i` for interactive only) |
+| `aero click TARGET` | Click; `TARGET` is `@ref` or a CSS selector |
+| `aero fill TARGET VALUE` | Fill a field |
+| `aero eval SCRIPT` | Run JavaScript in the page |
+| `aero screenshot PATH` | Capture (`--full-page` for the full document) |
+| `aero test PATH` | Run a `.aero` recipe (`--report` for HTML or JSON) |
+| `aero validate PATH` | Parse a recipe and report its steps |
+| `aero engine install moli` | Download the managed engine (Linux x86_64) |
+| `aero sandbox probe` | Report sandbox support on this host |
+| `aero config` | Print an MCP server config snippet |
 
-### Environment Variables
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `AERO_TOKEN` | auto-generated | Authentication token for HTTP API |
-| `AERO_CDP` | `http://127.0.0.1:9222` | CDP endpoint |
-| `AERO_ENGINE` | `external` | Engine: external, moli, chrome, lightpanda |
-| `AERO_SERVER` | `http://127.0.0.1:8931` | HTTP server address |
+Most commands also accept shorthand verbs: `get text`, `get url`, `back`,
+`forward`, `reload`, `tabs`, `new-tab`, `press`, `wait`, `scroll`, `cookies`,
+`cdp`, `save-state`.
+
+### Environment
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `AERO_TOKEN` | auto-generated | Bearer token for the HTTP API. Minimum 24 characters. |
+| `AERO_TOKEN_FILE` | `~/.aero/token.json` | Where the generated token is stored |
+| `AERO_CDP` | `http://127.0.0.1:9222` | External CDP endpoint |
+| `AERO_ENGINE` | `external` | `external`, `moli`, `chrome`, or `lightpanda` |
+| `AERO_ENGINE_PATH` | — | Explicit browser or engine executable |
+| `AERO_SERVER` | `http://127.0.0.1:8931` | Daemon address |
 | `AERO_PROFILE` | `scrape` | Sandbox profile |
+| `AERO_MEMORY_LIMIT_MB` | unlimited | Worker memory ceiling (cgroup v2, Linux) |
+| `AERO_PIDS_LIMIT` | unlimited | Worker process ceiling (cgroup v2, Linux) |
+| `AERO_REQUEST_TIMEOUT_MS` | `120000` | Per-request deadline, 100–900000 |
+| `AERO_AUTH_FILE` | — | Principals file for multiple identities |
+| `AERO_UPLOAD_ROOT` | — | Directory `upload_file` is restricted to |
 
-### Sandbox Profiles
-| Profile | Network | Filesystem | Use case |
-|---------|---------|------------|----------|
-| `scrape` | Unrestricted | Read-only workspace | General browsing |
-| `offline` | Blocked | Read-only workspace | Local content only |
-| `full` | Unrestricted | Read-only workspace | Same as scrape |
+`AERO_ENGINE` defaults to `moli` only in builds with the `bundled-moli` feature;
+published binaries default to `external`.
+
+### Sandbox profiles
+
+| Profile | Implemented | Network | Filesystem |
+|---|---|---|---|
+| `scrape` | Yes | Unrestricted | Runtime read, private worker write |
+| `offline` | Yes | Outbound connect and datagram send denied | Runtime read, private worker write |
+| `untrusted` | Yes | Same as `offline` | Same as `offline` |
+| `full` | Yes | Unrestricted | Same as `scrape`; no host write |
+| `base` | **No** | — | Refuses to run |
+| `web-dev` | **No** | — | Refuses to run |
+| `test` | **No** | — | Refuses to run |
+
+`aero profile list` is the authoritative source. There is no hostname or IP
+allowlist: `offline` is all-or-nothing.
+
+---
 
 ## Troubleshooting
 
-**MCP server doesn't start:**
-- Check `aero --version` works
-- Verify browser is running on port 9222: `curl http://127.0.0.1:9222/json/version`
+**`aero doctor` shows engine_detected failing.** On Linux x86_64, run
+`aero engine install moli`. Elsewhere, start a browser with
+`--remote-debugging-port=9222` and re-run `aero connect <agent> --install`.
 
-**Agent can't connect:**
-- Restart your agent after running `aero connect`
-- Check `~/.aero/token.json` exists
+**The agent does not list AeroBrowser's tools.** Restart it after
+`aero connect`. Check that the config file it reads is the one `aero connect`
+wrote — `aero doctor` lists the paths it checks.
 
-**Sandbox errors on Linux:**
-- Ensure kernel supports Landlock (5.13+)
-- Check `aero sandbox probe`
+**`AERO_TOKEN must contain at least 24 characters`.** The generated token is 44
+characters, so this means a token was set by hand. Use at least 24, or delete the
+token file to have one generated.
 
-**Moli engine not found:**
-- Run `aero connect --install` on Linux x86_64
-- Or use an external Chrome browser
+**Sandbox errors on Linux.** Landlock requires kernel 5.13+. Run
+`aero sandbox probe`; it reports what this kernel supports.
+
+**`sandbox: {"supported": false}`.** Expected on Windows and unvalidated on
+macOS. Use an external browser and treat containment as its responsibility.
+
+**The daemon returns 503.** The session actor stopped. Run `aero start`.
+
+**A ref is rejected as stale.** Refs are invalidated by navigation and tab
+switches. Take a fresh `snapshot`.
