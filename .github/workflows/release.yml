@@ -90,6 +90,11 @@ jobs:
           sudo apt-get install -y gcc-aarch64-linux-gnu
 
       - name: Build
+        env:
+          # Cargo must invoke the cross gcc rather than the host x86_64 one.
+          # With the host linker, rustc's --fix-cortex-a53-843419 flag is
+          # rejected with "only supported on AArch64" and the link fails.
+          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
         run: cargo build --release --locked --target ${{ matrix.target }}
 
       - name: Stage artifact
