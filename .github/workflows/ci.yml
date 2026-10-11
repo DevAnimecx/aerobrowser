@@ -106,13 +106,13 @@ jobs:
         shell: bash
         env:
           # Loopback-only credential for the CI fixture server. Never reuse.
-          AERO_TOKEN: ci-fixture-only-token-not-for-production
+          DELTA_TOKEN: ci-fixture-only-token-not-for-production
           # Explicit opt-in; mocks stay disabled in normal execution.
-          AERO_ALLOW_NETWORK_MOCKS: "1"
-          AERO_EXPECT_VERSION: "0.5.0"
+          DELTA_ALLOW_NETWORK_MOCKS: "1"
+          DELTA_EXPECT_VERSION: "0.0.1"
         run: |
           set -euo pipefail
-          export AERO_UPLOAD_ROOT="$PWD/examples"
+          export DELTA_UPLOAD_ROOT="$PWD/examples"
           mkdir -p artifacts/v05
 
           CHROME=$(find "$HOME/.cache/ms-playwright" -path '*/chrome-linux*/chrome' -type f | head -1)
@@ -121,13 +121,13 @@ jobs:
             exit 1
           fi
           "$CHROME" --headless --no-sandbox --remote-debugging-port=9222 \
-            --user-data-dir="$RUNNER_TEMP/aero-chrome" about:blank >chrome.log 2>&1 &
+            --user-data-dir="$RUNNER_TEMP/delta-chrome" about:blank >chrome.log 2>&1 &
           CHROME_PID=$!
           python3 -m http.server 4173 --bind 127.0.0.1 --directory examples >fixture.log 2>&1 &
           FIXTURE_PID=$!
-          target/debug/aero mcp --transport http >aero.log 2>&1 &
-          AERO_PID=$!
-          trap 'kill "$CHROME_PID" "$FIXTURE_PID" "$AERO_PID" 2>/dev/null || true' EXIT
+          target/debug/delta mcp --transport http >delta.log 2>&1 &
+          DELTA_PID=$!
+          trap 'kill "$CHROME_PID" "$FIXTURE_PID" "$DELTA_PID" 2>/dev/null || true' EXIT
 
           for url in http://127.0.0.1:9222/json/version \
                      http://127.0.0.1:4173/login.html \
@@ -137,14 +137,14 @@ jobs:
 
           # Every suite that can run on a generic Linux host. Moli, cgroup and
           # Landlock suites are covered by the sandbox job below.
-          for suite in e2e_extended transports_profiles_e2e supervisor_e2e v05_features_e2e; do
+          for suite in e2e_extended transports_profiles_e2e supervisor_e2e features_e2e; do
             echo "::group::tests/${suite}.py"
             python3 "tests/${suite}.py"
             echo "::endgroup::"
           done
 
-          echo "::group::tests/v03_stdio_cancel.py"
-          python3 tests/v03_stdio_cancel.py
+          echo "::group::tests/stdio_cancel_e2e.py"
+          python3 tests/stdio_cancel_e2e.py
           echo "::endgroup::"
       - name: Verify the shipped skill file is present
         run: |
@@ -175,7 +175,7 @@ jobs:
       - name: Sandbox probe
         run: |
           set -euo pipefail
-          target/debug/aero sandbox probe | tee sandbox-probe.json
+          target/debug/delta sandbox probe | tee sandbox-probe.json
       - name: Landlock enforcement
         shell: bash
         run: |
@@ -198,7 +198,7 @@ jobs:
             exit 0
           fi
           bash scripts/run-delegated.sh
-          python3 tests/v03_real_e2e.py
+          python3 tests/sandbox_delegation_e2e.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
