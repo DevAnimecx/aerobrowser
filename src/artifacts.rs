@@ -15,6 +15,9 @@ impl Artifacts {
             .unwrap_or_else(|| std::env::temp_dir().join("delta-artifacts"));
         std::fs::create_dir_all(&base)?;
         let root = base.join(uuid::Uuid::new_v4().to_string());
+        // `mut` is only needed for the Unix mode() call below, so it is allowed
+        // to look unused on platforms that compile that branch out.
+        #[cfg_attr(not(unix), allow(unused_mut))]
         let mut d = std::fs::DirBuilder::new();
         #[cfg(unix)]
         {

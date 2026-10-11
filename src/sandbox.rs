@@ -1,4 +1,8 @@
-use anyhow::{bail, Context, Result};
+use anyhow::{bail, Result};
+// Only the Landlock path loop calls with_context, and that loop is Linux-only,
+// so the trait import is gated to match rather than left unused elsewhere.
+#[cfg(target_os = "linux")]
+use anyhow::Context;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 #[derive(Clone, Debug, Serialize, Deserialize)]
