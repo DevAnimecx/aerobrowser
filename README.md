@@ -148,6 +148,10 @@ Delta Browser is a single binary that sits between those two:
 - [Contributing](#contributing)
 - [License](#license)
 
+New to Delta Browser, or coming from AeroBrowser? Start with the
+[FAQ](docs/FAQ.md), the [agent guide](docs/AGENTS.md), or the
+[migration table](docs/MIGRATION.md).
+
 ---
 
 ## Install
@@ -665,13 +669,23 @@ document or URL changed. Take a second `snapshot { delta: true }`.
 | [Quick start](docs/QUICKSTART.md) | First working setup |
 | [Install](docs/INSTALL.md) | Every platform, agent, and install method |
 | [API reference](docs/API.md) | All 62 tools, schemas, DSL grammar |
-| [Agent skill](docs/AGENT-SKILL.md) | How an agent should drive Delta Browser |
+| [Driving from an agent](docs/AGENTS.md) | The navigate-snapshot-act loop, batching, safety |
+| [Agent skill](docs/AGENT-SKILL.md) | The copy embedded in the binary, for agents to read |
+| [Comparison](docs/COMPARISON.md) | Delta Browser vs Playwright MCP vs Puppeteer MCP |
+| [FAQ](docs/FAQ.md) | Long-form answers to the common questions |
+| [Migration](docs/MIGRATION.md) | Coming from AeroBrowser 0.5 |
 | [Architecture](docs/ARCHITECTURE.md) | System design |
 | [Security](SECURITY.md) | Trust boundaries and known limits |
 | [Deployment](docs/DEPLOYMENT.md) | Daemon, cgroups, transports |
 | [Roadmap](docs/ROADMAP.md) | What is implemented and what is not |
-| [Release notes 0.5](docs/RELEASE-0.0.md) | What changed |
+| [Release notes 0.0.1](docs/RELEASE-0.0.md) | What changed |
+| [Changelog](CHANGELOG.md) | Full timeline and provenance |
 | [Third-party notices](THIRD-PARTY-NOTICES.md) | Bundled components and their licenses |
+
+Machine-readable summaries for answer engines and tooling live in
+[`llms.txt`](llms.txt), the CycloneDX SBOM in
+[`docs/SBOM.cdx.json`](docs/SBOM.cdx.json), and the tool manifest in
+[`docs/tools.json`](docs/tools.json).
 
 ---
 
