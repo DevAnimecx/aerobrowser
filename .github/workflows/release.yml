@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Version to release (must match Cargo.toml, e.g. v0.5.0)"
+        description: "Version to release (must match Cargo.toml, e.g. v0.0.1)"
         required: true
 
 # Write access is scoped to the publish job; builders only need to read.
@@ -51,22 +51,22 @@ jobs:
         include:
           - os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
-            artifact: aero-linux-x86_64
+            artifact: delta-linux-x86_64
           - os: ubuntu-22.04
             target: aarch64-unknown-linux-gnu
-            artifact: aero-linux-aarch64
+            artifact: delta-linux-aarch64
           - os: macos-14
             target: aarch64-apple-darwin
-            artifact: aero-macos-aarch64
+            artifact: delta-macos-aarch64
           - os: macos-13
             target: x86_64-apple-darwin
-            artifact: aero-macos-x86_64
+            artifact: delta-macos-x86_64
           - os: windows-2022
             target: x86_64-pc-windows-msvc
-            artifact: aero-windows-x86_64.zip
+            artifact: delta-windows-x86_64.zip
           - os: windows-11-arm
             target: aarch64-pc-windows-msvc
-            artifact: aero-windows-aarch64.zip
+            artifact: delta-windows-aarch64.zip
 
     steps:
       - uses: actions/checkout@v4
@@ -93,8 +93,8 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p dist
-          BIN="target/${{ matrix.target }}/release/aero"
-          [ -f "$BIN" ] || BIN="target/${{ matrix.target }}/release/aero.exe"
+          BIN="target/${{ matrix.target }}/release/delta"
+          [ -f "$BIN" ] || BIN="target/${{ matrix.target }}/release/delta.exe"
           if [ ! -f "$BIN" ]; then
             echo "::error::no built binary at $BIN"; exit 1
           fi
@@ -112,9 +112,9 @@ jobs:
         run: |
           set -euo pipefail
           if [ "${{ matrix.os }}" = "windows-2022" ] || [ "${{ matrix.os }}" = "windows-11-arm" ]; then
-            BIN="target/${{ matrix.target }}/release/aero.exe"
+            BIN="target/${{ matrix.target }}/release/delta.exe"
           else
-            BIN="target/${{ matrix.target }}/release/aero"
+            BIN="target/${{ matrix.target }}/release/delta"
             chmod +x "$BIN"
           fi
           "$BIN" --version
@@ -151,7 +151,7 @@ jobs:
           set -euo pipefail
           cd dist
           # Every filename the installers will look up must appear here.
-          sha256sum aero-* > SHA256SUMS
+          sha256sum delta-* > SHA256SUMS
           mv SHA256SUMS ../
           cat SHA256SUMS
           # A file listed but absent would make verification silently impossible.
@@ -221,7 +221,7 @@ jobs:
         run: |
           set -euo pipefail
           shopt -s nullglob
-          files=(artifacts/aero-*)
+          files=(artifacts/delta-*)
           if [ ${#files[@]} -eq 0 ]; then
             echo "::error::no artifacts to publish"; exit 1
           fi
@@ -234,12 +234,12 @@ jobs:
             echo
             echo '```sh'
             echo "# Linux / macOS"
-            echo "curl -fsSL https://raw.githubusercontent.com/DevAnimecx/aerobrowser/master/scripts/install.sh | sh"
+            echo "curl -fsSL https://raw.githubusercontent.com/DevAnimecx/deltabrowser/main/scripts/install.sh | sh"
             echo '```'
             echo
             echo '```powershell'
             echo "# Windows PowerShell"
-            echo "irm https://raw.githubusercontent.com/DevAnimecx/aerobrowser/master/scripts/install.ps1 | iex; Install-AeroBrowser -Agent opencode"
+            echo "irm https://raw.githubusercontent.com/DevAnimecx/deltabrowser/main/scripts/install.ps1 | iex; Install-DeltaBrowser -Agent opencode"
             echo '```'
             echo
             echo "Both installers verify the \`SHA256SUMS\` digest published with this release."
@@ -247,20 +247,20 @@ jobs:
             echo "### Verify your install"
             echo
             echo '```sh'
-            echo "aero doctor"
+            echo "delta doctor"
             echo '```'
             echo
             echo "### Licensing"
             echo
             echo "Business Source License 1.1 with an Additional Use Grant. Free below USD 10M annual"
             echo "revenue; commercial use above that, or offering browser automation as a service,"
-            echo "requires a paid license. See [LICENSE](https://github.com/DevAnimecx/aerobrowser/blob/master/LICENSE)."
+            echo "requires a paid license. See [LICENSE](https://github.com/DevAnimecx/deltabrowser/blob/master/LICENSE)."
           } > NOTES.md
 
           gh release create "$TAG" "${files[@]}" metadata/SHA256SUMS \
-            --verify-tag --title "AeroBrowser $TAG" --notes-file NOTES.md
+            --verify-tag --title "DeltaBrowser $TAG" --notes-file NOTES.md
 
       - name: Attest build provenance
         uses: actions/attest-build-provenance@v1
         with:
-          subject-path: artifacts/aero-*
+          subject-path: artifacts/delta-*
