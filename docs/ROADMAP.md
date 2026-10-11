@@ -5,7 +5,7 @@ column is as important as the left.
 
 | Area | Implemented | Remaining |
 |---|---|---|
-| CLI | All subcommands, aliases, `aero doctor`, HTML and JSON reports | Shell completions; interactive prompts |
+| CLI | All subcommands, aliases, `delta doctor`, HTML and JSON reports | Shell completions; interactive prompts |
 | MCP tools | 62 tools with schemas, `batch`, delta snapshots, target-scoped CDP allowlist | Formal MCP conformance testing; resumable streams |
 | Bundled engine | Pinned, digest-verified Moli; managed workers on Linux x86_64 | In-process embedding; broad SPA compatibility; cold-start targets |
 | Worker isolation | Dedicated worker per session, Landlock + seccomp, private artifacts | Independent adversarial security review |

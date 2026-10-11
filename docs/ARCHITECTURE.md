@@ -1,6 +1,6 @@
-> Current 0.4 updates: see [RELEASE-0.4.md](RELEASE-0.4.md) and [DEPLOYMENT.md](DEPLOYMENT.md). Older state-restoration and cleanup limitations below are historical.
+> **This document describes the current architecture.** For what changed in the most recent release, read [RELEASE-0.0.md](RELEASE-0.0.md); for the full timeline including the AeroBrowser releases that preceded the rename, read [../CHANGELOG.md](../CHANGELOG.md).
 
-> **Historical 0.2 baseline below.** For current 0.3 changes and remaining gaps, read [RELEASE-0.3.md](RELEASE-0.3.md) and [DEPLOYMENT.md](DEPLOYMENT.md). Statements below that cancellation, tenant session ownership, hard RAM limits or measured HAR are absent were superseded in 0.3. Other limitations still apply.
+> Statements below that cancellation, tenant session ownership, hard RAM limits or measured HAR are absent were superseded in AeroBrowser 0.3. Other limitations still apply.
 
 # Runtime architecture — 0.2
 
@@ -29,7 +29,7 @@ MCP initialization is lazy with respect to engine startup. A tool that needs a b
 
 ## Managed workers
 
-Every managed MCP session owns a child process group. The broker gives the child a private working directory, a cleared environment, runtime read grants and private write grants. It invokes the same Aero executable in an internal worker mode, applies restrictions, then `exec`s the engine. The engine's arguments and policy are constructed by the trusted broker, not page JS.
+Every managed MCP session owns a child process group. The broker gives the child a private working directory, a cleared environment, runtime read grants and private write grants. It invokes the same Delta executable in an internal worker mode, applies restrictions, then `exec`s the engine. The engine's arguments and policy are constructed by the trusted broker, not page JS.
 
 The child has its own engine and storage context. An integration test kills one Moli process and checks that another session remains usable. This solves crash separation by **not sharing one engine process**. It does not satisfy the original one-process target. The unbundled external-CDP mode instead shares a browser and cannot promise engine crash separation.
 

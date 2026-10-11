@@ -1,6 +1,6 @@
 # API and test language — 0.5
 
-`aero tools` and `docs/tools.json` are generated from the same source as the server's schema, so neither can drift from the implementation. There are **62 tools**.
+`delta tools` and `docs/tools.json` are generated from the same source as the server's schema, so neither can drift from the implementation. There are **62 tools**.
 
 ## Tool groups
 
@@ -28,19 +28,19 @@
 
 **Waits:** navigate supports domcontentloaded, load and networkidle. Network idle uses the current CDP session's inflight network events and a 500 ms quiet interval; long-lived requests can cause timeout. Visible checks geometry and CSS visibility, not visual occlusion.
 
-**Timeout layering:** three independent deadlines apply. A per-request deadline (`AERO_REQUEST_TIMEOUT_MS`, default 120 s, range 100–900000) covers the whole MCP request; a 30 s deadline covers each CDP call; and `navigate` waits up to 15 s for readiness. `navigate.timeout_ms` and `wait_for.timeout_ms` are additionally capped at 30000 by their schemas. On request-deadline expiry the session **disposes its browser context** to guarantee cleanup, so any in-flight browser action is abandoned with it. Individual tool timeouts alone do not cancel browser work.
+**Timeout layering:** three independent deadlines apply. A per-request deadline (`DELTA_REQUEST_TIMEOUT_MS`, default 120 s, range 100–900000) covers the whole MCP request; a 30 s deadline covers each CDP call; and `navigate` waits up to 15 s for readiness. `navigate.timeout_ms` and `wait_for.timeout_ms` are additionally capped at 30000 by their schemas. On request-deadline expiry the session **disposes its browser context** to guarantee cleanup, so any in-flight browser action is abandoned with it. Individual tool timeouts alone do not cancel browser work.
 
 **Images/PDF:** screenshot returns image data; selectors/JPEG quality/full-page capture are supported in the ordinary screenshot path. Annotation is a separate temporary DOM overlay path, with PNG output and cleanup. Annotation combined with other screenshot options is not a fully supported visual contract. PDF supports A4/letter and landscape. Optional remote output paths are plain artifact filenames.
 
 **State:** save_state returns a path and portable state object. restore_state accepts a state object or a filename within this session's artifact directory. Only supported cookies, tabs/URLs, localStorage, sessionStorage and scroll are restored. Storage is applied after navigation; an app may need reload. History, IndexedDB, CacheStorage, service workers and in-flight JS/connections are omitted. Restore can fail partially; it is not transactional.
 
-**Network:** interception rules apply to the current tab, newest matching wildcard rule wins. Actions are block/mock/log/clear. Mock body is a string with optional status/headers; operator AERO_ALLOW_NETWORK_MOCKS=1 is required. Event queues are bounded. HAR bodies are omitted, redirect hops are preserved, and timing subfields use observed CDP values or -1 for unknown. Incomplete requests are omitted and counted. Encoded transfer bytes are distinct from unknown body size. URLs/query parameters are not redacted. Raw network logs retain untrusted CDP event data and may contain secrets.
+**Network:** interception rules apply to the current tab, newest matching wildcard rule wins. Actions are block/mock/log/clear. Mock body is a string with optional status/headers; operator DELTA_ALLOW_NETWORK_MOCKS=1 is required. Event queues are bounded. HAR bodies are omitted, redirect hops are preserved, and timing subfields use observed CDP values or -1 for unknown. Incomplete requests are omitted and counted. Encoded transfer bytes are distinct from unknown body size. URLs/query parameters are not redacted. Raw network logs retain untrusted CDP event data and may contain secrets.
 
 **Metrics:** FCP/navigation timings and available LCP are measured from page APIs. TTI is null, not guessed. Memory uses engine CDP counters when supported; fallback DOM traversal is labeled as current-document-only. Unsupported heap/listener metrics are null. Server RSS and worker RSS on Linux are individual process readings, not Chrome whole-tree accounting.
 
 **Restricted raw CDP:** only the listed target-scoped methods are allowed. Browser.close, cross-target commands, storage-global commands and arbitrary IO are rejected.
 
-**Management:** server_shutdown closes only the caller's browser/worker, optionally exporting state. It cannot terminate peers. server_profile_set can tighten to offline/untrusted only before a worker starts; it does not relax a running sandbox. server_logs returns metadata for this session, not other clients' logs. The operator's `aero stop` is a separate admin action.
+**Management:** server_shutdown closes only the caller's browser/worker, optionally exporting state. It cannot terminate peers. server_profile_set can tighten to offline/untrusted only before a worker starts; it does not relax a running sandbox. server_logs returns metadata for this session, not other clients' logs. The operator's `delta stop` is a separate admin action.
 
 **Assertions:** a returned `passed:false` is a test failure, even when the tool invocation itself completed successfully. `test_run` returns passed/failed/skipped counts; CLI test exits nonzero for failed runs.
 
@@ -107,13 +107,13 @@ stop OWNED_PORT
 
 A target is `@eGENERATION_INDEX` or a CSS selector. Missing conditional targets mean false; engine errors fail the run. First failing executed step stops execution; later steps are counted as skipped. Conditional control markers count as steps. A sleep is limited to 30 seconds.
 
-`serve` selects a fixed argv/cwd/port entry from AERO_SERVE_CONFIG. It does not accept arbitrary shell strings or dynamically chosen args. All processes owned by a run are cleaned up on completion/failure. Existing listeners are not adopted or stopped.
+`serve` selects a fixed argv/cwd/port entry from DELTA_SERVE_CONFIG. It does not accept arbitrary shell strings or dynamically chosen args. All processes owned by a run are cleaned up on completion/failure. Existing listeners are not adopted or stopped.
 
 ## CLI
 
-Common aliases map to the same tools: open, snapshot, click, fill, type, select, check/uncheck, press, hover, scroll, drag, upload, eval, get text/attr/url/title, screenshot, pdf, wait, tabs/tab/new-tab/close-tab, back/forward/reload, save-state/restore-state, cookies, cdp, status, logs, close. `aero call TOOL JSON` exposes the exact schema without CLI alias ambiguity.
+Common aliases map to the same tools: open, snapshot, click, fill, type, select, check/uncheck, press, hover, scroll, drag, upload, eval, get text/attr/url/title, screenshot, pdf, wait, tabs/tab/new-tab/close-tab, back/forward/reload, save-state/restore-state, cookies, cdp, status, logs, close. `delta call TOOL JSON` exposes the exact schema without CLI alias ambiguity.
 
-Use `aero test FILE --report PATH` for a test run; `aero validate FILE` parses only. The CLI command tree is not byte-for-byte identical to the illustrative PRD examples. `aero start` is a foreground HTTP service; use an external supervisor for daemonization. `aero stop` requests authenticated administrative shutdown.
+Use `delta test FILE --report PATH` for a test run; `delta validate FILE` parses only. The CLI command tree is not byte-for-byte identical to the illustrative PRD examples. `delta start` is a foreground HTTP service; use an external supervisor for daemonization. `delta stop` requests authenticated administrative shutdown.
 
 ## 0.3 protocol additions
 See [deployment](DEPLOYMENT.md) for principals and request budgets. `notifications/cancelled` works while a request is running on stdio, HTTP and legacy SSE. Cancellation invalidates the browser context; effects already performed are not rolled back. Requests execute FIFO with at most eight waiting requests. `-32800` is cancellation, `-32002` deadline, and `-32001` queue full. IDs need only be unique while in flight. Tool results include `structuredContent.result` in addition to MCP presentation content. Replies may arrive out of order: match their IDs.
@@ -123,11 +123,11 @@ See [deployment](DEPLOYMENT.md) for principals and request budgets. `notificatio
 ## 0.5 additions
 
 - **`batch`** and **`snapshot.delta`** as described above. `batch` is call-level batching inside one MCP request; it is not request cancellation or a streaming/resumable protocol, and neither of those exists.
-- Tool count is 62. `aero doctor` is a CLI subcommand and is not an MCP tool.
+- Tool count is 62. `delta doctor` is a CLI subcommand and is not an MCP tool.
 - The `tools/list` assertion in `src/mcp.rs` pins the count, so adding a tool without updating it fails the build.
 
 ## Diagnostics
 
-`aero doctor` runs entirely locally and reports: build and platform, home directory resolution, engine detection, local browser discovery, sandbox probe support, CDP and daemon port reachability, auth token validity and location, daemon liveness, and the resolved path plus configured state for all ten agent config locations.
+`delta doctor` runs entirely locally and reports: build and platform, home directory resolution, engine detection, local browser discovery, sandbox probe support, CDP and daemon port reachability, auth token validity and location, daemon liveness, and the resolved path plus configured state for all ten agent config locations.
 
 Every failing check includes a `fix` string. `--json` emits the same data for tooling. Use it as the first step in any troubleshooting, and include it in bug reports.
