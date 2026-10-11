@@ -283,8 +283,21 @@ function Invoke-DeltaSummary {
     Write-Host ""
 }
 
-# Always run the install, forwarding whatever parameters were supplied. Direct
-# invocation passes them through; the pipe-to-shell form arrives with none, so
-# the defaults apply and the function does the work.
-Install-DeltaBrowser -InstallDir $InstallDir -Version $Version -Force:$Force `
-    -Agent $Agent -NoProfile:$NoProfile -InstallEngine:$InstallEngine -NoVerify:$NoVerify
+# Do not self-invoke. The documented form is
+#
+#   irm .../install.ps1 | iex; Install-DeltaBrowser [-Agent opencode]
+#
+# and an unconditional call here made that install twice: once with defaults
+# from the auto-invoke, then again with the parameters the user typed. Two
+# downloads and two rounds of output for one install is confusing enough to
+# look like the second one is the one that mattered.
+#
+# `irm | iex` on its own now prints what to type instead of silently doing
+# nothing, which was the only reason the auto-invoke existed.
+if ($MyInvocation.InvocationName -ne '.') {
+    Write-Host ""
+    Write-Host "  DeltaBrowser installer loaded." -ForegroundColor Cyan
+    Write-Host "  Now run:  Install-DeltaBrowser" -ForegroundColor White
+    Write-Host "  Or with an agent:  Install-DeltaBrowser -Agent opencode" -ForegroundColor DarkGray
+    Write-Host ""
+}
