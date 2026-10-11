@@ -1,11 +1,21 @@
 ﻿Business Source License 1.1
 
 Licensor:      Blackvault Technology, Inc.
-Licensed Work: AeroBrowser
-              Copyright (c) 2026 Blackvault Technology, Inc.
-              Copyright (c) 2026 AeroBrowser contributors
+Licensed Work: Delta Browser (delta)
+               Copyright (c) 2026 Blackvault Technology, Inc.
+               Copyright (c) 2026 Delta Browser contributors
 Change Date:  2030-01-01
 Change License: Apache License, Version 2.0
+
+Provenance
+
+  Delta Browser is the renamed and continued development of AeroBrowser, which
+  the same Licensor published under this license as versions 0.1 through 0.5.
+  The rename is a rebranding of the Licensor's own work: the Licensor holds
+  every right in the Licensed Work and has not relicensed it. The copyright
+  above is unchanged. Earlier AeroBrowser releases remain available in the
+  repository history and under the terms on which they were published.
+
 
 Notice
 
@@ -99,4 +109,4 @@ license additionally:
 Contact: licensing@blackvaulttech.netlify.app
 
 Licensed Work copyright and license information is also published at
-https://github.com/DevAnimecx/aerobrowser/blob/master/LICENSE
+https://github.com/DevAnimecx/deltabrowser/blob/master/LICENSE
