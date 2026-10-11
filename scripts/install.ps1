@@ -76,7 +76,7 @@ if (-not $InstallDir) {
 
 $script:TempDir = $null
 
-function Initialize-DeltaBrowser {
+function Install-DeltaBrowser {
     <#
     .SYNOPSIS
         Installs DeltaBrowser. This is the entry point used by the pipe-to-shell
@@ -170,8 +170,18 @@ function Initialize-DeltaBrowser {
         $ok = $false
         if (-not $NoVerify) {
             try {
-                $sumsText = (Invoke-WebRequest -Uri "https://github.com/$REPO/releases/download/$Version/SHA256SUMS" -UseBasicParsing).Content
-                $line = ($sumsText -split "`n" | Where-Object { $_ -match "\s\*?$([regex]::Escape($ASSET))\s*$" } | Select-Object -First 1)
+                # Invoke-WebRequest -UseBasicParsing hands back .Content as
+                # byte[] on Windows PowerShell 5.1 but as [string] on 7. On 5.1
+                # the byte array never matched the per-line pattern below, so
+                # every install reported "not listed in SHA256SUMS" and
+                # proceeded unverified while claiming to have checked.
+                $response = Invoke-WebRequest -Uri "https://github.com/$REPO/releases/download/$Version/SHA256SUMS" -UseBasicParsing
+                $sumsText = if ($response.Content -is [byte[]]) {
+                    [Text.Encoding]::UTF8.GetString($response.Content)
+                } else {
+                    [string]$response.Content
+                }
+                $line = ($sumsText -split "`r?`n" | Where-Object { $_ -match "\s\*?$([regex]::Escape($ASSET))\s*$" } | Select-Object -First 1)
                 if ($line) {
                     $expected = ($line -split "\s+")[0].ToUpperInvariant()
                     $actual = (Get-FileHash -Path $zip -Algorithm SHA256).Hash.ToUpperInvariant()
