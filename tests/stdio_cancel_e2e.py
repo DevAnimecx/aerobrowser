@@ -1,6 +1,9 @@
 import os,json,subprocess,time,select
 from pathlib import Path
-binary=os.environ.get('DELTA_BIN','target/release/delta')
+binary=os.environ.get('DELTA_BIN')
+if not binary:
+ # Match the other suites and the CI browser job, which builds debug.
+ binary=next((p for p in ('target/debug/delta','target/release/delta','target/debug/delta.exe','target/release/delta.exe') if Path(p).is_file()),'target/debug/delta')
 # Cancellation is a property of the stdio transport, not of the engine, so this
 # runs against the managed Moli engine when one is on the host and falls back to
 # the external engine otherwise. Requiring MOLI_PATH unconditionally meant the
