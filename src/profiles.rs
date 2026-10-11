@@ -318,10 +318,15 @@ pub fn install(
     force: bool,
 ) -> Result<Value> {
     let exe = std::env::current_exe()?.to_string_lossy().into_owned();
-    let template = template(agent, &exe, engine, endpoint)?;
+    // codex is configured in TOML and has no entry in template(), so this
+    // branch has to be taken before the template is resolved. Resolving it
+    // first fell through to template()'s catch-all bail and made
+    // install_codex unreachable, so installing a Codex config always failed
+    // with "Client file location must be supplied explicitly".
     if agent == "codex" {
         return install_codex(path, &exe, engine, endpoint, force);
     }
+    let template = template(agent, &exe, engine, endpoint)?;
 
     if path
         .symlink_metadata()
