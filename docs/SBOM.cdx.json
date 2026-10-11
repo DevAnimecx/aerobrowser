@@ -3,7 +3,7 @@
   "specVersion": "1.6",
   "version": 1,
   "metadata": {
-    "timestamp": "2026-10-09T17:06:33Z",
+    "timestamp": "2026-10-11T13:51:00Z",
     "component": {
       "type": "application",
       "bom-ref": "pkg:cargo/deltabrowser@0.0.1",
@@ -395,6 +395,46 @@
     },
     {
       "type": "library",
+      "bom-ref": "pkg:cargo/cfg_aliases@0.2.2",
+      "name": "cfg_aliases",
+      "version": "0.2.2",
+      "purl": "pkg:cargo/cfg_aliases@0.2.2",
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/katharostech/cfg_aliases"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/chacha20@0.10.2",
+      "name": "chacha20",
+      "version": "0.10.2",
+      "purl": "pkg:cargo/chacha20@0.10.2",
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT OR Apache-2.0"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/RustCrypto/stream-ciphers"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "bom-ref": "pkg:cargo/clap@4.6.7",
       "name": "clap",
       "version": "4.6.7",
@@ -495,66 +535,6 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:cargo/core-foundation@0.9.4",
-      "name": "core-foundation",
-      "version": "0.9.4",
-      "purl": "pkg:cargo/core-foundation@0.9.4",
-      "licenses": [
-        {
-          "license": {
-            "name": "MIT OR Apache-2.0"
-          }
-        }
-      ],
-      "externalReferences": [
-        {
-          "type": "vcs",
-          "url": "https://github.com/servo/core-foundation-rs"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "bom-ref": "pkg:cargo/core-foundation@0.10.1",
-      "name": "core-foundation",
-      "version": "0.10.1",
-      "purl": "pkg:cargo/core-foundation@0.10.1",
-      "licenses": [
-        {
-          "license": {
-            "name": "MIT OR Apache-2.0"
-          }
-        }
-      ],
-      "externalReferences": [
-        {
-          "type": "vcs",
-          "url": "https://github.com/servo/core-foundation-rs"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "bom-ref": "pkg:cargo/core-foundation-sys@0.8.7",
-      "name": "core-foundation-sys",
-      "version": "0.8.7",
-      "purl": "pkg:cargo/core-foundation-sys@0.8.7",
-      "licenses": [
-        {
-          "license": {
-            "name": "MIT OR Apache-2.0"
-          }
-        }
-      ],
-      "externalReferences": [
-        {
-          "type": "vcs",
-          "url": "https://github.com/servo/core-foundation-rs"
-        }
-      ]
-    },
-    {
-      "type": "library",
       "bom-ref": "pkg:cargo/core_detect@1.0.0",
       "name": "core_detect",
       "version": "1.0.0",
@@ -579,6 +559,26 @@
       "name": "cpufeatures",
       "version": "0.2.17",
       "purl": "pkg:cargo/cpufeatures@0.2.17",
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT OR Apache-2.0"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/RustCrypto/utils"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/cpufeatures@0.3.1",
+      "name": "cpufeatures",
+      "version": "0.3.1",
+      "purl": "pkg:cargo/cpufeatures@0.3.1",
       "licenses": [
         {
           "license": {
@@ -755,26 +755,6 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:cargo/fastrand@2.5.0",
-      "name": "fastrand",
-      "version": "2.5.0",
-      "purl": "pkg:cargo/fastrand@2.5.0",
-      "licenses": [
-        {
-          "license": {
-            "name": "Apache-2.0 OR MIT"
-          }
-        }
-      ],
-      "externalReferences": [
-        {
-          "type": "vcs",
-          "url": "https://github.com/smol-rs/fastrand"
-        }
-      ]
-    },
-    {
-      "type": "library",
       "bom-ref": "pkg:cargo/filetime@0.2.29",
       "name": "filetime",
       "version": "0.2.29",
@@ -850,46 +830,6 @@
         {
           "type": "vcs",
           "url": "https://github.com/servo/rust-fnv"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "bom-ref": "pkg:cargo/foreign-types@0.3.2",
-      "name": "foreign-types",
-      "version": "0.3.2",
-      "purl": "pkg:cargo/foreign-types@0.3.2",
-      "licenses": [
-        {
-          "license": {
-            "name": "MIT/Apache-2.0"
-          }
-        }
-      ],
-      "externalReferences": [
-        {
-          "type": "vcs",
-          "url": "https://github.com/sfackler/foreign-types"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "bom-ref": "pkg:cargo/foreign-types-shared@0.1.1",
-      "name": "foreign-types-shared",
-      "version": "0.1.1",
-      "purl": "pkg:cargo/foreign-types-shared@0.1.1",
-      "licenses": [
-        {
-          "license": {
-            "name": "MIT/Apache-2.0"
-          }
-        }
-      ],
-      "externalReferences": [
-        {
-          "type": "vcs",
-          "url": "https://github.com/sfackler/foreign-types"
         }
       ]
     },
@@ -1157,7 +1097,7 @@
       "type": "library",
       "bom-ref": "pkg:cargo/heck@0.5.0",
       "name": "heck",
-      "version": "0.0.1",
+      "version": "0.5.0",
       "purl": "pkg:cargo/heck@0.5.0",
       "licenses": [
         {
@@ -1310,26 +1250,6 @@
         {
           "type": "vcs",
           "url": "https://github.com/rustls/hyper-rustls"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "bom-ref": "pkg:cargo/hyper-tls@0.6.0",
-      "name": "hyper-tls",
-      "version": "0.6.0",
-      "purl": "pkg:cargo/hyper-tls@0.6.0",
-      "licenses": [
-        {
-          "license": {
-            "name": "MIT/Apache-2.0"
-          }
-        }
-      ],
-      "externalReferences": [
-        {
-          "type": "vcs",
-          "url": "https://github.com/hyperium/hyper-tls"
         }
       ]
     },
@@ -1735,6 +1655,26 @@
     },
     {
       "type": "library",
+      "bom-ref": "pkg:cargo/lru-slab@0.1.3",
+      "name": "lru-slab",
+      "version": "0.1.3",
+      "purl": "pkg:cargo/lru-slab@0.1.3",
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT OR Apache-2.0 OR Zlib"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/Ralith/lru-slab"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "bom-ref": "pkg:cargo/matchit@0.8.4",
       "name": "matchit",
       "version": "0.8.4",
@@ -1855,26 +1795,6 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:cargo/native-tls@0.2.18",
-      "name": "native-tls",
-      "version": "0.2.18",
-      "purl": "pkg:cargo/native-tls@0.2.18",
-      "licenses": [
-        {
-          "license": {
-            "name": "MIT OR Apache-2.0"
-          }
-        }
-      ],
-      "externalReferences": [
-        {
-          "type": "vcs",
-          "url": "https://github.com/rust-native-tls/rust-native-tls"
-        }
-      ]
-    },
-    {
-      "type": "library",
       "bom-ref": "pkg:cargo/once_cell@1.21.4",
       "name": "once_cell",
       "version": "1.21.4",
@@ -1910,80 +1830,6 @@
         {
           "type": "vcs",
           "url": "https://github.com/polyfill-rs/once_cell_polyfill"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "bom-ref": "pkg:cargo/openssl@0.10.81",
-      "name": "openssl",
-      "version": "0.10.81",
-      "purl": "pkg:cargo/openssl@0.10.81",
-      "licenses": [
-        {
-          "license": {
-            "name": "Apache-2.0"
-          }
-        }
-      ],
-      "externalReferences": [
-        {
-          "type": "vcs",
-          "url": "https://github.com/rust-openssl/rust-openssl"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "bom-ref": "pkg:cargo/openssl-macros@0.1.1",
-      "name": "openssl-macros",
-      "version": "0.1.1",
-      "purl": "pkg:cargo/openssl-macros@0.1.1",
-      "licenses": [
-        {
-          "license": {
-            "name": "MIT/Apache-2.0"
-          }
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "bom-ref": "pkg:cargo/openssl-probe@0.2.1",
-      "name": "openssl-probe",
-      "version": "0.2.1",
-      "purl": "pkg:cargo/openssl-probe@0.2.1",
-      "licenses": [
-        {
-          "license": {
-            "name": "MIT OR Apache-2.0"
-          }
-        }
-      ],
-      "externalReferences": [
-        {
-          "type": "vcs",
-          "url": "https://github.com/rustls/openssl-probe"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "bom-ref": "pkg:cargo/openssl-sys@0.9.117",
-      "name": "openssl-sys",
-      "version": "0.9.117",
-      "purl": "pkg:cargo/openssl-sys@0.9.117",
-      "licenses": [
-        {
-          "license": {
-            "name": "MIT"
-          }
-        }
-      ],
-      "externalReferences": [
-        {
-          "type": "vcs",
-          "url": "https://github.com/rust-openssl/rust-openssl"
         }
       ]
     },
@@ -2069,26 +1915,6 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:cargo/pkg-config@0.3.34",
-      "name": "pkg-config",
-      "version": "0.3.34",
-      "purl": "pkg:cargo/pkg-config@0.3.34",
-      "licenses": [
-        {
-          "license": {
-            "name": "MIT OR Apache-2.0"
-          }
-        }
-      ],
-      "externalReferences": [
-        {
-          "type": "vcs",
-          "url": "https://github.com/rust-lang/pkg-config-rs"
-        }
-      ]
-    },
-    {
-      "type": "library",
       "bom-ref": "pkg:cargo/potential_utf@0.1.6",
       "name": "potential_utf",
       "version": "0.1.6",
@@ -2144,6 +1970,66 @@
         {
           "type": "vcs",
           "url": "https://github.com/dtolnay/proc-macro2"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/quinn@0.11.12",
+      "name": "quinn",
+      "version": "0.11.12",
+      "purl": "pkg:cargo/quinn@0.11.12",
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT OR Apache-2.0"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/quinn-rs/quinn"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/quinn-proto@0.11.18",
+      "name": "quinn-proto",
+      "version": "0.11.18",
+      "purl": "pkg:cargo/quinn-proto@0.11.18",
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT OR Apache-2.0"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/quinn-rs/quinn"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/quinn-udp@0.5.15",
+      "name": "quinn-udp",
+      "version": "0.5.15",
+      "purl": "pkg:cargo/quinn-udp@0.5.15",
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT OR Apache-2.0"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/quinn-rs/quinn"
         }
       ]
     },
@@ -2229,6 +2115,26 @@
     },
     {
       "type": "library",
+      "bom-ref": "pkg:cargo/rand@0.10.3",
+      "name": "rand",
+      "version": "0.10.3",
+      "purl": "pkg:cargo/rand@0.10.3",
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT OR Apache-2.0"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/rust-random/rand"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "bom-ref": "pkg:cargo/rand_chacha@0.9.0",
       "name": "rand_chacha",
       "version": "0.9.0",
@@ -2264,6 +2170,46 @@
         {
           "type": "vcs",
           "url": "https://github.com/rust-random/rand"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/rand_core@0.10.1",
+      "name": "rand_core",
+      "version": "0.10.1",
+      "purl": "pkg:cargo/rand_core@0.10.1",
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT OR Apache-2.0"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/rust-random/rand_core"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/rand_pcg@0.10.2",
+      "name": "rand_pcg",
+      "version": "0.10.2",
+      "purl": "pkg:cargo/rand_pcg@0.10.2",
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT OR Apache-2.0"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/rust-random/rngs"
         }
       ]
     },
@@ -2324,6 +2270,26 @@
         {
           "type": "vcs",
           "url": "https://github.com/briansmith/ring"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/rustc-hash@2.1.3",
+      "name": "rustc-hash",
+      "version": "2.1.3",
+      "purl": "pkg:cargo/rustc-hash@2.1.3",
+      "licenses": [
+        {
+          "license": {
+            "name": "Apache-2.0 OR MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/rust-lang/rustc-hash"
         }
       ]
     },
@@ -2449,26 +2415,6 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:cargo/schannel@0.1.29",
-      "name": "schannel",
-      "version": "0.1.29",
-      "purl": "pkg:cargo/schannel@0.1.29",
-      "licenses": [
-        {
-          "license": {
-            "name": "MIT"
-          }
-        }
-      ],
-      "externalReferences": [
-        {
-          "type": "vcs",
-          "url": "https://github.com/steffengy/schannel-rs"
-        }
-      ]
-    },
-    {
-      "type": "library",
       "bom-ref": "pkg:cargo/scopeguard@1.2.0",
       "name": "scopeguard",
       "version": "1.2.0",
@@ -2484,46 +2430,6 @@
         {
           "type": "vcs",
           "url": "https://github.com/bluss/scopeguard"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "bom-ref": "pkg:cargo/security-framework@3.7.0",
-      "name": "security-framework",
-      "version": "3.7.0",
-      "purl": "pkg:cargo/security-framework@3.7.0",
-      "licenses": [
-        {
-          "license": {
-            "name": "MIT OR Apache-2.0"
-          }
-        }
-      ],
-      "externalReferences": [
-        {
-          "type": "vcs",
-          "url": "https://github.com/kornelski/rust-security-framework"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "bom-ref": "pkg:cargo/security-framework-sys@2.17.0",
-      "name": "security-framework-sys",
-      "version": "2.17.0",
-      "purl": "pkg:cargo/security-framework-sys@2.17.0",
-      "licenses": [
-        {
-          "license": {
-            "name": "MIT OR Apache-2.0"
-          }
-        }
-      ],
-      "externalReferences": [
-        {
-          "type": "vcs",
-          "url": "https://github.com/kornelski/rust-security-framework"
         }
       ]
     },
@@ -3009,46 +2915,6 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:cargo/system-configuration@0.7.0",
-      "name": "system-configuration",
-      "version": "0.7.0",
-      "purl": "pkg:cargo/system-configuration@0.7.0",
-      "licenses": [
-        {
-          "license": {
-            "name": "MIT OR Apache-2.0"
-          }
-        }
-      ],
-      "externalReferences": [
-        {
-          "type": "vcs",
-          "url": "https://github.com/mullvad/system-configuration-rs"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "bom-ref": "pkg:cargo/system-configuration-sys@0.6.0",
-      "name": "system-configuration-sys",
-      "version": "0.6.0",
-      "purl": "pkg:cargo/system-configuration-sys@0.6.0",
-      "licenses": [
-        {
-          "license": {
-            "name": "MIT OR Apache-2.0"
-          }
-        }
-      ],
-      "externalReferences": [
-        {
-          "type": "vcs",
-          "url": "https://github.com/mullvad/system-configuration-rs"
-        }
-      ]
-    },
-    {
-      "type": "library",
       "bom-ref": "pkg:cargo/tar@0.4.46",
       "name": "tar",
       "version": "0.4.46",
@@ -3064,26 +2930,6 @@
         {
           "type": "vcs",
           "url": "https://github.com/composefs/tar-rs"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "bom-ref": "pkg:cargo/tempfile@3.27.0",
-      "name": "tempfile",
-      "version": "3.27.0",
-      "purl": "pkg:cargo/tempfile@3.27.0",
-      "licenses": [
-        {
-          "license": {
-            "name": "MIT OR Apache-2.0"
-          }
-        }
-      ],
-      "externalReferences": [
-        {
-          "type": "vcs",
-          "url": "https://github.com/Stebalien/tempfile"
         }
       ]
     },
@@ -3149,6 +2995,26 @@
     },
     {
       "type": "library",
+      "bom-ref": "pkg:cargo/tinyvec@1.13.3",
+      "name": "tinyvec",
+      "version": "1.13.3",
+      "purl": "pkg:cargo/tinyvec@1.13.3",
+      "licenses": [
+        {
+          "license": {
+            "name": "Zlib OR Apache-2.0 OR MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/Lokathor/tinyvec"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "bom-ref": "pkg:cargo/tokio@1.53.2",
       "name": "tokio",
       "version": "1.53.2",
@@ -3184,26 +3050,6 @@
         {
           "type": "vcs",
           "url": "https://github.com/tokio-rs/tokio"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "bom-ref": "pkg:cargo/tokio-native-tls@0.3.1",
-      "name": "tokio-native-tls",
-      "version": "0.3.1",
-      "purl": "pkg:cargo/tokio-native-tls@0.3.1",
-      "licenses": [
-        {
-          "license": {
-            "name": "MIT"
-          }
-        }
-      ],
-      "externalReferences": [
-        {
-          "type": "vcs",
-          "url": "https://github.com/tokio-rs/tls"
         }
       ]
     },
@@ -3689,26 +3535,6 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:cargo/vcpkg@0.2.15",
-      "name": "vcpkg",
-      "version": "0.2.15",
-      "purl": "pkg:cargo/vcpkg@0.2.15",
-      "licenses": [
-        {
-          "license": {
-            "name": "MIT/Apache-2.0"
-          }
-        }
-      ],
-      "externalReferences": [
-        {
-          "type": "vcs",
-          "url": "https://github.com/mcgoo/vcpkg-rs"
-        }
-      ]
-    },
-    {
-      "type": "library",
       "bom-ref": "pkg:cargo/version_check@0.9.5",
       "name": "version_check",
       "version": "0.9.5",
@@ -3909,70 +3735,50 @@
     },
     {
       "type": "library",
+      "bom-ref": "pkg:cargo/web-time@1.1.0",
+      "name": "web-time",
+      "version": "1.1.0",
+      "purl": "pkg:cargo/web-time@1.1.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT OR Apache-2.0"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/daxpedda/web-time"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/webpki-roots@1.0.9",
+      "name": "webpki-roots",
+      "version": "1.0.9",
+      "purl": "pkg:cargo/webpki-roots@1.0.9",
+      "licenses": [
+        {
+          "license": {
+            "name": "CDLA-Permissive-2.0"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/rustls/webpki-roots"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "bom-ref": "pkg:cargo/windows-link@0.2.1",
       "name": "windows-link",
       "version": "0.2.1",
       "purl": "pkg:cargo/windows-link@0.2.1",
-      "licenses": [
-        {
-          "license": {
-            "name": "MIT OR Apache-2.0"
-          }
-        }
-      ],
-      "externalReferences": [
-        {
-          "type": "vcs",
-          "url": "https://github.com/microsoft/windows-rs"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "bom-ref": "pkg:cargo/windows-registry@0.6.1",
-      "name": "windows-registry",
-      "version": "0.6.1",
-      "purl": "pkg:cargo/windows-registry@0.6.1",
-      "licenses": [
-        {
-          "license": {
-            "name": "MIT OR Apache-2.0"
-          }
-        }
-      ],
-      "externalReferences": [
-        {
-          "type": "vcs",
-          "url": "https://github.com/microsoft/windows-rs"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "bom-ref": "pkg:cargo/windows-result@0.4.1",
-      "name": "windows-result",
-      "version": "0.4.1",
-      "purl": "pkg:cargo/windows-result@0.4.1",
-      "licenses": [
-        {
-          "license": {
-            "name": "MIT OR Apache-2.0"
-          }
-        }
-      ],
-      "externalReferences": [
-        {
-          "type": "vcs",
-          "url": "https://github.com/microsoft/windows-rs"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "bom-ref": "pkg:cargo/windows-strings@0.5.1",
-      "name": "windows-strings",
-      "version": "0.5.1",
-      "purl": "pkg:cargo/windows-strings@0.5.1",
       "licenses": [
         {
           "license": {
@@ -4579,31 +4385,6 @@
       "dependsOn": []
     },
     {
-      "ref": "pkg:cargo/deltabrowser@0.0.1",
-      "dependsOn": [
-        "pkg:cargo/anyhow@1.0.104",
-        "pkg:cargo/axum@0.8.9",
-        "pkg:cargo/base64@0.22.1",
-        "pkg:cargo/clap@4.6.7",
-        "pkg:cargo/flate2@1.1.10",
-        "pkg:cargo/futures-util@0.3.34",
-        "pkg:cargo/libc@0.2.190",
-        "pkg:cargo/reqwest@0.12.28",
-        "pkg:cargo/serde@1.0.229",
-        "pkg:cargo/serde_json@1.0.151",
-        "pkg:cargo/serde_yaml_ng@0.10.0",
-        "pkg:cargo/sha2@0.10.9",
-        "pkg:cargo/shell-words@1.1.1",
-        "pkg:cargo/tar@0.4.46",
-        "pkg:cargo/tokio@1.53.2",
-        "pkg:cargo/tokio-tungstenite@0.28.0",
-        "pkg:cargo/tokio-util@0.7.19",
-        "pkg:cargo/toml_edit@0.23.10%2Bspec-1.0.0",
-        "pkg:cargo/uuid@1.27.0",
-        "pkg:generic/lexmount/moli@1.1.12"
-      ]
-    },
-    {
       "ref": "pkg:cargo/anstream@1.0.0",
       "dependsOn": [
         "pkg:cargo/anstyle@1.0.14",
@@ -4731,6 +4512,18 @@
       "dependsOn": []
     },
     {
+      "ref": "pkg:cargo/cfg_aliases@0.2.2",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:cargo/chacha20@0.10.2",
+      "dependsOn": [
+        "pkg:cargo/cfg-if@1.0.5",
+        "pkg:cargo/cpufeatures@0.3.1",
+        "pkg:cargo/rand_core@0.10.1"
+      ]
+    },
+    {
       "ref": "pkg:cargo/clap@4.6.7",
       "dependsOn": [
         "pkg:cargo/clap_builder@4.6.7",
@@ -4764,29 +4557,17 @@
       "dependsOn": []
     },
     {
-      "ref": "pkg:cargo/core-foundation@0.9.4",
-      "dependsOn": [
-        "pkg:cargo/core-foundation-sys@0.8.7",
-        "pkg:cargo/libc@0.2.190"
-      ]
-    },
-    {
-      "ref": "pkg:cargo/core-foundation@0.10.1",
-      "dependsOn": [
-        "pkg:cargo/core-foundation-sys@0.8.7",
-        "pkg:cargo/libc@0.2.190"
-      ]
-    },
-    {
-      "ref": "pkg:cargo/core-foundation-sys@0.8.7",
-      "dependsOn": []
-    },
-    {
       "ref": "pkg:cargo/core_detect@1.0.0",
       "dependsOn": []
     },
     {
       "ref": "pkg:cargo/cpufeatures@0.2.17",
+      "dependsOn": [
+        "pkg:cargo/libc@0.2.190"
+      ]
+    },
+    {
+      "ref": "pkg:cargo/cpufeatures@0.3.1",
       "dependsOn": [
         "pkg:cargo/libc@0.2.190"
       ]
@@ -4807,6 +4588,31 @@
     {
       "ref": "pkg:cargo/data-encoding@2.11.1",
       "dependsOn": []
+    },
+    {
+      "ref": "pkg:cargo/deltabrowser@0.0.1",
+      "dependsOn": [
+        "pkg:cargo/anyhow@1.0.104",
+        "pkg:cargo/axum@0.8.9",
+        "pkg:cargo/base64@0.22.1",
+        "pkg:cargo/clap@4.6.7",
+        "pkg:cargo/flate2@1.1.10",
+        "pkg:cargo/futures-util@0.3.34",
+        "pkg:cargo/libc@0.2.190",
+        "pkg:cargo/reqwest@0.12.28",
+        "pkg:cargo/serde@1.0.229",
+        "pkg:cargo/serde_json@1.0.151",
+        "pkg:cargo/serde_yaml_ng@0.10.0",
+        "pkg:cargo/sha2@0.10.9",
+        "pkg:cargo/shell-words@1.1.1",
+        "pkg:cargo/tar@0.4.46",
+        "pkg:cargo/tokio@1.53.2",
+        "pkg:cargo/tokio-tungstenite@0.28.0",
+        "pkg:cargo/tokio-util@0.7.19",
+        "pkg:cargo/toml_edit@0.23.10%2Bspec-1.0.0",
+        "pkg:cargo/uuid@1.27.0",
+        "pkg:generic/lexmount/moli@1.1.12"
+      ]
     },
     {
       "ref": "pkg:cargo/digest@0.10.7",
@@ -4846,10 +4652,6 @@
       ]
     },
     {
-      "ref": "pkg:cargo/fastrand@2.5.0",
-      "dependsOn": []
-    },
-    {
       "ref": "pkg:cargo/filetime@0.2.29",
       "dependsOn": [
         "pkg:cargo/cfg-if@1.0.5",
@@ -4870,16 +4672,6 @@
     },
     {
       "ref": "pkg:cargo/fnv@1.0.7",
-      "dependsOn": []
-    },
-    {
-      "ref": "pkg:cargo/foreign-types@0.3.2",
-      "dependsOn": [
-        "pkg:cargo/foreign-types-shared@0.1.1"
-      ]
-    },
-    {
-      "ref": "pkg:cargo/foreign-types-shared@0.1.1",
       "dependsOn": []
     },
     {
@@ -4936,8 +4728,10 @@
       "ref": "pkg:cargo/getrandom@0.2.17",
       "dependsOn": [
         "pkg:cargo/cfg-if@1.0.5",
+        "pkg:cargo/js-sys@0.3.106",
         "pkg:cargo/libc@0.2.190",
-        "pkg:cargo/wasi@0.11.1%2Bwasi-snapshot-preview1"
+        "pkg:cargo/wasi@0.11.1%2Bwasi-snapshot-preview1",
+        "pkg:cargo/wasm-bindgen@0.2.129"
       ]
     },
     {
@@ -4953,8 +4747,11 @@
       "ref": "pkg:cargo/getrandom@0.4.3",
       "dependsOn": [
         "pkg:cargo/cfg-if@1.0.5",
+        "pkg:cargo/js-sys@0.3.106",
         "pkg:cargo/libc@0.2.190",
-        "pkg:cargo/r-efi@6.0.0"
+        "pkg:cargo/r-efi@6.0.0",
+        "pkg:cargo/rand_core@0.10.1",
+        "pkg:cargo/wasm-bindgen@0.2.129"
       ]
     },
     {
@@ -5041,20 +4838,8 @@
         "pkg:cargo/rustls@0.23.45",
         "pkg:cargo/tokio@1.53.2",
         "pkg:cargo/tokio-rustls@0.26.6",
-        "pkg:cargo/tower-service@0.3.3"
-      ]
-    },
-    {
-      "ref": "pkg:cargo/hyper-tls@0.6.0",
-      "dependsOn": [
-        "pkg:cargo/bytes@1.12.1",
-        "pkg:cargo/http-body-util@0.1.5",
-        "pkg:cargo/hyper@1.11.1",
-        "pkg:cargo/hyper-util@0.1.21",
-        "pkg:cargo/native-tls@0.2.18",
-        "pkg:cargo/tokio@1.53.2",
-        "pkg:cargo/tokio-native-tls@0.3.1",
-        "pkg:cargo/tower-service@0.3.3"
+        "pkg:cargo/tower-service@0.3.3",
+        "pkg:cargo/webpki-roots@1.0.9"
       ]
     },
     {
@@ -5073,11 +4858,9 @@
         "pkg:cargo/percent-encoding@2.3.2",
         "pkg:cargo/pin-project-lite@0.2.17",
         "pkg:cargo/socket2@0.6.5",
-        "pkg:cargo/system-configuration@0.7.0",
         "pkg:cargo/tokio@1.53.2",
         "pkg:cargo/tower-service@0.3.3",
-        "pkg:cargo/tracing@0.1.44",
-        "pkg:cargo/windows-registry@0.6.1"
+        "pkg:cargo/tracing@0.1.44"
       ]
     },
     {
@@ -5209,6 +4992,10 @@
       "dependsOn": []
     },
     {
+      "ref": "pkg:cargo/lru-slab@0.1.3",
+      "dependsOn": []
+    },
+    {
       "ref": "pkg:cargo/matchit@0.8.4",
       "dependsOn": []
     },
@@ -5240,58 +5027,12 @@
       "dependsOn": []
     },
     {
-      "ref": "pkg:cargo/native-tls@0.2.18",
-      "dependsOn": [
-        "pkg:cargo/libc@0.2.190",
-        "pkg:cargo/log@0.4.34",
-        "pkg:cargo/openssl@0.10.81",
-        "pkg:cargo/openssl-probe@0.2.1",
-        "pkg:cargo/openssl-sys@0.9.117",
-        "pkg:cargo/schannel@0.1.29",
-        "pkg:cargo/security-framework@3.7.0",
-        "pkg:cargo/security-framework-sys@2.17.0",
-        "pkg:cargo/tempfile@3.27.0"
-      ]
-    },
-    {
       "ref": "pkg:cargo/once_cell@1.21.4",
       "dependsOn": []
     },
     {
       "ref": "pkg:cargo/once_cell_polyfill@1.70.2",
       "dependsOn": []
-    },
-    {
-      "ref": "pkg:cargo/openssl@0.10.81",
-      "dependsOn": [
-        "pkg:cargo/bitflags@2.13.2",
-        "pkg:cargo/cfg-if@1.0.5",
-        "pkg:cargo/foreign-types@0.3.2",
-        "pkg:cargo/libc@0.2.190",
-        "pkg:cargo/openssl-macros@0.1.1",
-        "pkg:cargo/openssl-sys@0.9.117"
-      ]
-    },
-    {
-      "ref": "pkg:cargo/openssl-macros@0.1.1",
-      "dependsOn": [
-        "pkg:cargo/proc-macro2@1.0.107",
-        "pkg:cargo/quote@1.0.47",
-        "pkg:cargo/syn@2.0.119"
-      ]
-    },
-    {
-      "ref": "pkg:cargo/openssl-probe@0.2.1",
-      "dependsOn": []
-    },
-    {
-      "ref": "pkg:cargo/openssl-sys@0.9.117",
-      "dependsOn": [
-        "pkg:cargo/cc@1.6.0",
-        "pkg:cargo/libc@0.2.190",
-        "pkg:cargo/pkg-config@0.3.34",
-        "pkg:cargo/vcpkg@0.2.15"
-      ]
     },
     {
       "ref": "pkg:cargo/parking_lot@0.12.5",
@@ -5319,10 +5060,6 @@
       "dependsOn": []
     },
     {
-      "ref": "pkg:cargo/pkg-config@0.3.34",
-      "dependsOn": []
-    },
-    {
       "ref": "pkg:cargo/potential_utf@0.1.6",
       "dependsOn": [
         "pkg:cargo/zerovec@0.11.8"
@@ -5338,6 +5075,53 @@
       "ref": "pkg:cargo/proc-macro2@1.0.107",
       "dependsOn": [
         "pkg:cargo/unicode-ident@1.0.26"
+      ]
+    },
+    {
+      "ref": "pkg:cargo/quinn@0.11.12",
+      "dependsOn": [
+        "pkg:cargo/bytes@1.12.1",
+        "pkg:cargo/cfg_aliases@0.2.2",
+        "pkg:cargo/pin-project-lite@0.2.17",
+        "pkg:cargo/quinn-proto@0.11.18",
+        "pkg:cargo/quinn-udp@0.5.15",
+        "pkg:cargo/rustc-hash@2.1.3",
+        "pkg:cargo/rustls@0.23.45",
+        "pkg:cargo/socket2@0.6.5",
+        "pkg:cargo/thiserror@2.0.21",
+        "pkg:cargo/tokio@1.53.2",
+        "pkg:cargo/tracing@0.1.44",
+        "pkg:cargo/web-time@1.1.0"
+      ]
+    },
+    {
+      "ref": "pkg:cargo/quinn-proto@0.11.18",
+      "dependsOn": [
+        "pkg:cargo/bytes@1.12.1",
+        "pkg:cargo/getrandom@0.4.3",
+        "pkg:cargo/lru-slab@0.1.3",
+        "pkg:cargo/rand@0.10.3",
+        "pkg:cargo/rand_pcg@0.10.2",
+        "pkg:cargo/ring@0.17.14",
+        "pkg:cargo/rustc-hash@2.1.3",
+        "pkg:cargo/rustls@0.23.45",
+        "pkg:cargo/rustls-pki-types@1.15.1",
+        "pkg:cargo/slab@0.4.12",
+        "pkg:cargo/thiserror@2.0.21",
+        "pkg:cargo/tinyvec@1.13.3",
+        "pkg:cargo/tracing@0.1.44",
+        "pkg:cargo/web-time@1.1.0"
+      ]
+    },
+    {
+      "ref": "pkg:cargo/quinn-udp@0.5.15",
+      "dependsOn": [
+        "pkg:cargo/cfg_aliases@0.2.2",
+        "pkg:cargo/libc@0.2.190",
+        "pkg:cargo/once_cell@1.21.4",
+        "pkg:cargo/socket2@0.6.5",
+        "pkg:cargo/tracing@0.1.44",
+        "pkg:cargo/windows-sys@0.52.0"
       ]
     },
     {
@@ -5362,6 +5146,14 @@
       ]
     },
     {
+      "ref": "pkg:cargo/rand@0.10.3",
+      "dependsOn": [
+        "pkg:cargo/chacha20@0.10.2",
+        "pkg:cargo/getrandom@0.4.3",
+        "pkg:cargo/rand_core@0.10.1"
+      ]
+    },
+    {
       "ref": "pkg:cargo/rand_chacha@0.9.0",
       "dependsOn": [
         "pkg:cargo/ppv-lite86@0.2.21",
@@ -5372,6 +5164,16 @@
       "ref": "pkg:cargo/rand_core@0.9.5",
       "dependsOn": [
         "pkg:cargo/getrandom@0.3.4"
+      ]
+    },
+    {
+      "ref": "pkg:cargo/rand_core@0.10.1",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:cargo/rand_pcg@0.10.2",
+      "dependsOn": [
+        "pkg:cargo/rand_core@0.10.1"
       ]
     },
     {
@@ -5393,28 +5195,29 @@
         "pkg:cargo/http-body-util@0.1.5",
         "pkg:cargo/hyper@1.11.1",
         "pkg:cargo/hyper-rustls@0.27.10",
-        "pkg:cargo/hyper-tls@0.6.0",
         "pkg:cargo/hyper-util@0.1.21",
         "pkg:cargo/js-sys@0.3.106",
         "pkg:cargo/log@0.4.34",
         "pkg:cargo/mime@0.3.17",
-        "pkg:cargo/native-tls@0.2.18",
         "pkg:cargo/percent-encoding@2.3.2",
         "pkg:cargo/pin-project-lite@0.2.17",
+        "pkg:cargo/quinn@0.11.12",
+        "pkg:cargo/rustls@0.23.45",
         "pkg:cargo/rustls-pki-types@1.15.1",
         "pkg:cargo/serde@1.0.229",
         "pkg:cargo/serde_json@1.0.151",
         "pkg:cargo/serde_urlencoded@0.7.1",
         "pkg:cargo/sync_wrapper@1.0.2",
         "pkg:cargo/tokio@1.53.2",
-        "pkg:cargo/tokio-native-tls@0.3.1",
+        "pkg:cargo/tokio-rustls@0.26.6",
         "pkg:cargo/tower@0.5.3",
         "pkg:cargo/tower-http@0.6.11",
         "pkg:cargo/tower-service@0.3.3",
         "pkg:cargo/url@2.5.8",
         "pkg:cargo/wasm-bindgen@0.2.129",
         "pkg:cargo/wasm-bindgen-futures@0.4.79",
-        "pkg:cargo/web-sys@0.3.106"
+        "pkg:cargo/web-sys@0.3.106",
+        "pkg:cargo/webpki-roots@1.0.9"
       ]
     },
     {
@@ -5427,6 +5230,10 @@
         "pkg:cargo/untrusted@0.9.0",
         "pkg:cargo/windows-sys@0.52.0"
       ]
+    },
+    {
+      "ref": "pkg:cargo/rustc-hash@2.1.3",
+      "dependsOn": []
     },
     {
       "ref": "pkg:cargo/rustix@1.1.5",
@@ -5442,6 +5249,7 @@
       "ref": "pkg:cargo/rustls@0.23.45",
       "dependsOn": [
         "pkg:cargo/once_cell@1.21.4",
+        "pkg:cargo/ring@0.17.14",
         "pkg:cargo/rustls-pki-types@1.15.1",
         "pkg:cargo/rustls-webpki@0.103.15",
         "pkg:cargo/subtle@2.6.1",
@@ -5451,6 +5259,7 @@
     {
       "ref": "pkg:cargo/rustls-pki-types@1.15.1",
       "dependsOn": [
+        "pkg:cargo/web-time@1.1.0",
         "pkg:cargo/zeroize@1.9.0"
       ]
     },
@@ -5471,31 +5280,8 @@
       "dependsOn": []
     },
     {
-      "ref": "pkg:cargo/schannel@0.1.29",
-      "dependsOn": [
-        "pkg:cargo/windows-sys@0.61.2"
-      ]
-    },
-    {
       "ref": "pkg:cargo/scopeguard@1.2.0",
       "dependsOn": []
-    },
-    {
-      "ref": "pkg:cargo/security-framework@3.7.0",
-      "dependsOn": [
-        "pkg:cargo/bitflags@2.13.2",
-        "pkg:cargo/core-foundation@0.10.1",
-        "pkg:cargo/core-foundation-sys@0.8.7",
-        "pkg:cargo/libc@0.2.190",
-        "pkg:cargo/security-framework-sys@2.17.0"
-      ]
-    },
-    {
-      "ref": "pkg:cargo/security-framework-sys@2.17.0",
-      "dependsOn": [
-        "pkg:cargo/core-foundation-sys@0.8.7",
-        "pkg:cargo/libc@0.2.190"
-      ]
     },
     {
       "ref": "pkg:cargo/serde@1.0.229",
@@ -5652,36 +5438,11 @@
       ]
     },
     {
-      "ref": "pkg:cargo/system-configuration@0.7.0",
-      "dependsOn": [
-        "pkg:cargo/bitflags@2.13.2",
-        "pkg:cargo/core-foundation@0.9.4",
-        "pkg:cargo/system-configuration-sys@0.6.0"
-      ]
-    },
-    {
-      "ref": "pkg:cargo/system-configuration-sys@0.6.0",
-      "dependsOn": [
-        "pkg:cargo/core-foundation-sys@0.8.7",
-        "pkg:cargo/libc@0.2.190"
-      ]
-    },
-    {
       "ref": "pkg:cargo/tar@0.4.46",
       "dependsOn": [
         "pkg:cargo/filetime@0.2.29",
         "pkg:cargo/libc@0.2.190",
         "pkg:cargo/xattr@1.6.1"
-      ]
-    },
-    {
-      "ref": "pkg:cargo/tempfile@3.27.0",
-      "dependsOn": [
-        "pkg:cargo/fastrand@2.5.0",
-        "pkg:cargo/getrandom@0.4.3",
-        "pkg:cargo/once_cell@1.21.4",
-        "pkg:cargo/rustix@1.1.5",
-        "pkg:cargo/windows-sys@0.61.2"
       ]
     },
     {
@@ -5706,6 +5467,10 @@
       ]
     },
     {
+      "ref": "pkg:cargo/tinyvec@1.13.3",
+      "dependsOn": []
+    },
+    {
       "ref": "pkg:cargo/tokio@1.53.2",
       "dependsOn": [
         "pkg:cargo/bytes@1.12.1",
@@ -5725,13 +5490,6 @@
         "pkg:cargo/proc-macro2@1.0.107",
         "pkg:cargo/quote@1.0.47",
         "pkg:cargo/syn@3.0.6"
-      ]
-    },
-    {
-      "ref": "pkg:cargo/tokio-native-tls@0.3.1",
-      "dependsOn": [
-        "pkg:cargo/native-tls@0.2.18",
-        "pkg:cargo/tokio@1.53.2"
       ]
     },
     {
@@ -5902,10 +5660,6 @@
       ]
     },
     {
-      "ref": "pkg:cargo/vcpkg@0.2.15",
-      "dependsOn": []
-    },
-    {
       "ref": "pkg:cargo/version_check@0.9.5",
       "dependsOn": []
     },
@@ -5974,28 +5728,21 @@
       ]
     },
     {
+      "ref": "pkg:cargo/web-time@1.1.0",
+      "dependsOn": [
+        "pkg:cargo/js-sys@0.3.106",
+        "pkg:cargo/wasm-bindgen@0.2.129"
+      ]
+    },
+    {
+      "ref": "pkg:cargo/webpki-roots@1.0.9",
+      "dependsOn": [
+        "pkg:cargo/rustls-pki-types@1.15.1"
+      ]
+    },
+    {
       "ref": "pkg:cargo/windows-link@0.2.1",
       "dependsOn": []
-    },
-    {
-      "ref": "pkg:cargo/windows-registry@0.6.1",
-      "dependsOn": [
-        "pkg:cargo/windows-link@0.2.1",
-        "pkg:cargo/windows-result@0.4.1",
-        "pkg:cargo/windows-strings@0.5.1"
-      ]
-    },
-    {
-      "ref": "pkg:cargo/windows-result@0.4.1",
-      "dependsOn": [
-        "pkg:cargo/windows-link@0.2.1"
-      ]
-    },
-    {
-      "ref": "pkg:cargo/windows-strings@0.5.1",
-      "dependsOn": [
-        "pkg:cargo/windows-link@0.2.1"
-      ]
     },
     {
       "ref": "pkg:cargo/windows-sys@0.52.0",

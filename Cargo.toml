@@ -42,7 +42,16 @@ axum = "0.8"
 base64 = "0.22"
 clap = { version = "4", features = ["derive", "env"] }
 futures-util = "0.3"
-reqwest = { version = "0.12", features = ["json"] }
+# rustls rather than native-tls: native-tls links OpenSSL, which makes the
+# "no runtime dependencies beyond glibc" promise false and makes the aarch64
+# Linux artifact unbuildable, because cross-compiling openssl-sys needs arm64
+# libssl headers that a stock runner does not have.
+reqwest = { version = "0.12", default-features = false, features = [
+    "json",
+    "rustls-tls",
+    "http2",
+    "charset",
+] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 shell-words = "1"
