@@ -1,19 +1,42 @@
 [package]
-name = "aerobrowser"
-version = "0.5.0"
+name = "deltabrowser"
+version = "0.0.1"
 edition = "2021"
+rust-version = "1.75"
 license = "BSL-1.1"
-description = "Agent browser CLI and MCP server with managed engines and sandboxed browsing"
-repository = "https://github.com/DevAnimecx/aerobrowser"
-homepage = "https://github.com/DevAnimecx/aerobrowser"
-documentation = "https://github.com/DevAnimecx/aerobrowser"
-keywords = ["mcp", "browser", "chrome", "automation", "agent"]
-categories = ["command-line-utilities", "web-programming"]
+description = "Delta Browser - a Model Context Protocol browser for AI agents: 62 MCP tools, batched calls, delta snapshots, persistent sessions, and a kernel-enforced sandbox"
+readme = "README.md"
+repository = "https://github.com/DevAnimecx/deltabrowser"
+homepage = "https://github.com/DevAnimecx/deltabrowser"
+documentation = "https://github.com/DevAnimecx/deltabrowser/blob/main/docs/QUICKSTART.md"
+keywords = [
+    "mcp",
+    "model-context-protocol",
+    "browser",
+    "browser-automation",
+    "ai-agent",
+    "agent",
+    "chrome",
+    "chromium",
+    "cdp",
+    "sandbox",
+    "landlock",
+    "seccomp",
+    "web-automation",
+    "llm",
+    "scraping",
+]
+categories = [
+    "command-line-utilities",
+    "web-programming",
+    "development-tools",
+]
 authors = ["Adarsh Kushwah <adarsh@blackvaulttech.netlify.app>"]
 
 [[bin]]
-name = "aero"
+name = "delta"
 path = "src/main.rs"
+
 [dependencies]
 anyhow = "1"
 axum = "0.8"
