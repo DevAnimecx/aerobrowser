@@ -19,6 +19,10 @@ concurrency:
 jobs:
   dependency-review:
     name: Dependency review
+    # This action diffs a pull request against its base and refuses to run on
+    # a plain push: "Both a base ref and head ref must be provided". The job
+    # still appears in the Security workflow on push, it just does not execute.
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
