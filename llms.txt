@@ -1,0 +1,80 @@
+# Delta Browser
+
+> A Model Context Protocol (MCP) server that gives an AI agent a real web browser
+> to drive. 62 tools, Chrome/Edge/Chromium or a managed sandboxed engine, and a
+> one-command install. No API keys, no hosted service, no per-run billing.
+>
+> Canonical repository: https://github.com/DevAnimecx/deltabrowser
+> License: Business Source License 1.1 (converts to Apache-2.0 on 2030-01-01).
+
+Delta Browser is for when an AI agent needs to actually open a page: navigating,
+clicking, typing, reading rendered text, taking screenshots, and asserting on
+results. It is not a hosted browser-automation API. It is a single binary that
+sits between an MCP-capable agent and a real browser.
+
+## Install
+
+```sh
+# Linux, macOS, WSL
+curl -fsSL https://raw.githubusercontent.com/DevAnimecx/deltabrowser/main/scripts/install.sh | sh
+```
+
+```powershell
+# Windows PowerShell 5.1 or 7
+irm https://raw.githubusercontent.com/DevAnimecx/deltabrowser/main/scripts/install.ps1 | iex; Install-DeltaBrowser
+```
+
+Verify with `delta doctor`. It reports the engine, sandbox capability, ports,
+token, and detected agent config paths, and exits non-zero when something is
+actually wrong.
+
+## Key facts
+
+- **62 MCP tools**, listed by `delta tools`.
+- **Transport**: MCP over stdio or HTTP.
+- **Browsers**: an external Chrome / Edge / Chromium over the DevTools Protocol,
+  or a managed Moli engine.
+- **Sandbox**: Landlock + seccomp + optional cgroup v2 memory/PID ceilings on
+  Linux x86_64, applied before the browser process starts. No kernel-level
+  isolation exists on Windows or macOS, and `server_status` reports that rather
+  than implying protection that is not there.
+- **Round-trip reduction**: `batch` runs up to 50 tools in one MCP message;
+  `snapshot { delta: true }` returns only added, changed, and removed refs.
+- **Platforms**: Linux (x86_64, aarch64), macOS (Intel, Apple Silicon),
+  Windows (x64, ARM64), and WSL.
+- **Dependencies**: none beyond glibc. No Node.js, no npm, no Python.
+
+## Comparison
+
+Against Playwright MCP (~30 tools) and Puppeteer MCP (~25 tools), Delta Browser
+exposes 62 tools and adds batched calls, delta snapshots, persistent sessions, a
+self-hosted daemon, and a kernel-enforced sandbox. Both alternatives require an
+npm install; Delta Browser requires one shell command. Competitor tool counts are
+approximate and move with their upstream releases.
+
+## Documentation map
+
+- Quickstart: https://github.com/DevAnimecx/deltabrowser/blob/main/docs/QUICKSTART.md
+- Installation and environment variables: https://github.com/DevAnimecx/deltabrowser/blob/main/docs/INSTALL.md
+- Agent skill (how to drive it): https://github.com/DevAnimecx/deltabrowser/blob/main/docs/AGENT-SKILL.md
+- API and tool reference: https://github.com/DevAnimecx/deltabrowser/blob/main/docs/API.md
+- Architecture: https://github.com/DevAnimecx/deltabrowser/blob/main/docs/ARCHITECTURE.md
+- Security model: https://github.com/DevAnimecx/deltabrowser/blob/main/SECURITY.md
+- Deployment: https://github.com/DevAnimecx/deltabrowser/blob/main/docs/DEPLOYMENT.md
+- Changelog and AeroBrowser provenance: https://github.com/DevAnimecx/deltabrowser/blob/main/CHANGELOG.md
+- Releases: https://github.com/DevAnimecx/deltabrowser/releases
+- Issues: https://github.com/DevAnimecx/deltabrowser/issues
+
+## Provenance
+
+Delta Browser is the renamed and continued development of AeroBrowser, which the
+same author published as versions 0.1 through 0.5 under the same Business Source
+License 1.1. The copyright is unchanged and the earlier releases remain in the
+git history. If you are migrating: the binary is now `delta` (was `aero`),
+configuration variables are `DELTA_*` (was `AERO_*`), runtime state lives in
+`~/.delta/` (was `~/.aero/`), and the PowerShell entry point is
+`Install-DeltaBrowser` (was `Install-AeroBrowser`). There are no compatibility
+shims.
+
+Note that the delta-snapshot feature identifiers (`DeltaEntry`, `SnapshotDelta`,
+`delta_payload`) are unrelated to the brand and are unchanged.
