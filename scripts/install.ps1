@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    AeroBrowser installer for Windows.
+    DeltaBrowser installer for Windows.
 
 .DESCRIPTION
     Downloads the published release binary, verifies its SHA-256 digest, installs
@@ -10,7 +10,7 @@
     Installation directory. Default: $env:USERPROFILE\.local\bin
 
 .PARAMETER Version
-    Install a specific tag, e.g. v0.5.0. Default: latest release.
+    Install a specific tag, e.g. v0.0.1. Default: latest release.
 
 .PARAMETER Force
     Overwrite an existing installation.
@@ -33,7 +33,7 @@
     PS> .\scripts\install.ps1 -Agent opencode
 
 .EXAMPLE
-    PS> irm https://raw.githubusercontent.com/DevAnimecx/aerobrowser/master/scripts/install.ps1 | iex; Install-AeroBrowser -Agent opencode
+    PS> irm https://raw.githubusercontent.com/DevAnimecx/deltabrowser/main/scripts/install.ps1 | iex; Install-DeltaBrowser -Agent opencode
 #>
 param(
     [string]$InstallDir,
@@ -55,8 +55,8 @@ $ErrorActionPreference = "Stop"
 # large downloads.
 $ProgressPreference = 'SilentlyContinue'
 
-$REPO = "DevAnimecx/aerobrowser"
-$BIN_NAME = "aero.exe"
+$REPO = "DevAnimecx/deltabrowser"
+$BIN_NAME = "delta.exe"
 
 function Write-Step($msg) { Write-Host "==> $msg" -ForegroundColor Cyan }
 function Write-Info($msg) { Write-Host "  $msg" -ForegroundColor Blue }
@@ -76,10 +76,10 @@ if (-not $InstallDir) {
 
 $script:TempDir = $null
 
-function Initialize-AeroBrowser {
+function Initialize-DeltaBrowser {
     <#
     .SYNOPSIS
-        Installs AeroBrowser. This is the entry point used by the pipe-to-shell
+        Installs DeltaBrowser. This is the entry point used by the pipe-to-shell
         form, where the script body runs once with default parameters.
     #>
     param(
@@ -96,18 +96,18 @@ function Initialize-AeroBrowser {
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     $ProgressPreference = 'SilentlyContinue'
 
-    $REPO = "DevAnimecx/aerobrowser"
-    $BIN_NAME = "aero.exe"
+    $REPO = "DevAnimecx/deltabrowser"
+    $BIN_NAME = "delta.exe"
 
     if (-not $InstallDir) {
         $profile = if ($env:USERPROFILE) { $env:USERPROFILE } else { $HOME }
         $InstallDir = Join-Path $profile ".local\bin"
     }
 
-    $AERO = Join-Path $InstallDir $BIN_NAME
+    $DELTA = Join-Path $InstallDir $BIN_NAME
 
     Write-Host ""
-    Write-Host "AeroBrowser installer" -ForegroundColor White
+    Write-Host "DeltaBrowser installer" -ForegroundColor White
     Write-Host ""
 
     # --- Platform -----------------------------------------------------------
@@ -121,10 +121,10 @@ function Initialize-AeroBrowser {
     }
     if ($arch -match "ARM") {
         $PLATFORM = "windows-aarch64"
-        $ASSET = "aero-windows-aarch64.zip"
+        $ASSET = "delta-windows-aarch64.zip"
     } else {
         $PLATFORM = "windows-x86_64"
-        $ASSET = "aero-windows-x86_64.zip"
+        $ASSET = "delta-windows-x86_64.zip"
     }
     Write-Info "Platform: $PLATFORM"
 
@@ -132,7 +132,7 @@ function Initialize-AeroBrowser {
     if (-not $Version) {
         try {
             $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$REPO/releases/latest" `
-                -Headers @{ "Accept" = "application/vnd.github+json"; "User-Agent" = "aerobrowser-installer" }
+                -Headers @{ "Accept" = "application/vnd.github+json"; "User-Agent" = "deltabrowser-installer" }
             $Version = $release.tag_name
         } catch {
             Write-Fail "Could not determine the latest release ($_). Pass -Version to pin one explicitly."
@@ -141,18 +141,18 @@ function Initialize-AeroBrowser {
     Write-Info "Version: $Version"
 
     # --- Existing install ---------------------------------------------------
-    if (-not $Force -and (Test-Path $AERO)) {
-        $existing = try { & $AERO --version 2>$null } catch { "unknown" }
+    if (-not $Force -and (Test-Path $DELTA)) {
+        $existing = try { & $DELTA --version 2>$null } catch { "unknown" }
         Write-Ok "Already installed: $existing"
-        Write-Info "Location: $AERO"
+        Write-Info "Location: $DELTA"
         Write-Info "Re-run with -Force to upgrade."
-        Invoke-AeroSummary -AeroPath $AERO -Agent $Agent -InstallEngine:$InstallEngine
+        Invoke-DeltaSummary -DeltaPath $DELTA -Agent $Agent -InstallEngine:$InstallEngine
         return
     }
 
     # --- Work in a private, random temp directory ----------------------------
     New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
-    $work = Join-Path ([System.IO.Path]::GetTempPath()) ("aero-" + [System.IO.Path]::GetRandomFileName())
+    $work = Join-Path ([System.IO.Path]::GetTempPath()) ("delta-" + [System.IO.Path]::GetRandomFileName())
     New-Item -ItemType Directory -Path $work | Out-Null
     $script:TempDir = $work
 
@@ -197,24 +197,24 @@ function Initialize-AeroBrowser {
         $extract = Join-Path $work "extracted"
         Expand-Archive -Path $zip -DestinationPath $extract -Force
 
-        $binary = Get-ChildItem $extract -Filter "aero*.exe" -Recurse -File | Select-Object -First 1
-        if (-not $binary) { Write-Fail "No aero.exe found in $ASSET" }
-        if ($binary.Length -lt 100KB) { Write-Fail "Downloaded aero.exe is implausibly small; refusing to install." }
+        $binary = Get-ChildItem $extract -Filter "delta*.exe" -Recurse -File | Select-Object -First 1
+        if (-not $binary) { Write-Fail "No delta.exe found in $ASSET" }
+        if ($binary.Length -lt 100KB) { Write-Fail "Downloaded delta.exe is implausibly small; refusing to install." }
 
         # Stage inside the destination so an interrupted copy cannot leave a
         # broken binary on PATH.
-        $staged = Join-Path $InstallDir ".aero.new.exe"
+        $staged = Join-Path $InstallDir ".delta.new.exe"
         Copy-Item $binary.FullName $staged -Force
-        Move-Item -Path $staged -Destination $AERO -Force
+        Move-Item -Path $staged -Destination $DELTA -Force
 
         try {
-            $versionLine = & $AERO --version 2>$null
+            $versionLine = & $DELTA --version 2>$null
         } catch {
-            Remove-Item $AERO -Force -ErrorAction SilentlyContinue
+            Remove-Item $DELTA -Force -ErrorAction SilentlyContinue
             Write-Fail "Installed binary did not run. Removing it."
         }
         Write-Ok "Installed $versionLine"
-        Write-Host "  $AERO" -ForegroundColor DarkGray
+        Write-Host "  $DELTA" -ForegroundColor DarkGray
     }
     finally {
         if ($script:TempDir -and (Test-Path $script:TempDir)) {
@@ -236,38 +236,38 @@ function Initialize-AeroBrowser {
     # --- Managed engine -----------------------------------------------------
     if ($InstallEngine) {
         Write-Warn "Managed Moli engine downloads are Linux x86_64 only."
-        Write-Info "On Windows, AeroBrowser will adopt a locally installed browser instead."
+        Write-Info "On Windows, DeltaBrowser will adopt a locally installed browser instead."
         Write-Info "  Start Chrome with: chrome.exe --remote-debugging-port=9222"
     }
 
     # --- Agent --------------------------------------------------------------
     if ($Agent) {
         Write-Step "Configuring agent: $Agent"
-        & $AERO connect $Agent --install
+        & $DELTA connect $Agent --install
         if ($LASTEXITCODE -ne 0) {
-            Write-Fail "Could not configure agent '$Agent'. Run '$AERO doctor' to diagnose."
+            Write-Fail "Could not configure agent '$Agent'. Run '$DELTA doctor' to diagnose."
         }
         Write-Ok "Agent '$Agent' configured"
     }
 
-    Invoke-AeroSummary -AeroPath $AERO -Agent $Agent -InstallEngine:$InstallEngine
+    Invoke-DeltaSummary -DeltaPath $DELTA -Agent $Agent -InstallEngine:$InstallEngine
 }
 
-function Invoke-AeroSummary {
+function Invoke-DeltaSummary {
     param(
-        [Parameter(Mandatory = $true)][string]$AeroPath,
+        [Parameter(Mandatory = $true)][string]$DeltaPath,
         [string]$Agent,
         [switch]$InstallEngine
     )
 
     Write-Host ""
-    Write-Host "  AeroBrowser is ready." -ForegroundColor Green
+    Write-Host "  DeltaBrowser is ready." -ForegroundColor Green
     Write-Host ""
-    Write-Host "  Check the install:  $AeroPath doctor" -ForegroundColor White
+    Write-Host "  Check the install:  $DeltaPath doctor" -ForegroundColor White
     if ($Agent) {
         Write-Host "  Restart your agent to load the MCP server." -ForegroundColor White
     } else {
-        Write-Host "  Connect an agent:   $AeroPath connect opencode" -ForegroundColor White
+        Write-Host "  Connect an agent:   $DeltaPath connect opencode" -ForegroundColor White
         Write-Host "  Or start Chrome:    chrome.exe --remote-debugging-port=9222" -ForegroundColor DarkGray
     }
     Write-Host ""
@@ -276,5 +276,5 @@ function Invoke-AeroSummary {
 # Always run the install, forwarding whatever parameters were supplied. Direct
 # invocation passes them through; the pipe-to-shell form arrives with none, so
 # the defaults apply and the function does the work.
-Install-AeroBrowser -InstallDir $InstallDir -Version $Version -Force:$Force `
+Install-DeltaBrowser -InstallDir $InstallDir -Version $Version -Force:$Force `
     -Agent $Agent -NoProfile:$NoProfile -InstallEngine:$InstallEngine -NoVerify:$NoVerify
