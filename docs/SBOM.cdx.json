@@ -6,10 +6,10 @@
     "timestamp": "2026-10-09T17:06:33Z",
     "component": {
       "type": "application",
-      "bom-ref": "pkg:cargo/aerobrowser@0.5.0",
-      "name": "aerobrowser",
-      "version": "0.5.0",
-      "purl": "pkg:cargo/aerobrowser@0.5.0",
+      "bom-ref": "pkg:cargo/deltabrowser@0.0.1",
+      "name": "deltabrowser",
+      "version": "0.0.1",
+      "purl": "pkg:cargo/deltabrowser@0.0.1",
       "licenses": [
         {
           "license": {
@@ -20,14 +20,14 @@
       ],
       "properties": [
         {
-          "name": "aero:commercial-license",
+          "name": "delta:commercial-license",
           "value": "paid license required above USD 10M revenue or for service offerings; see LICENSE"
         }
       ]
     },
     "properties": [
       {
-        "name": "aero:scope",
+        "name": "delta:scope",
         "value": "Cargo resolved dependencies across platforms plus the pinned Moli executable. Declared licenses only, not a legal audit. Not a full engine or OS SBOM, vulnerability assessment, or signed provenance."
       }
     ]
@@ -1157,7 +1157,7 @@
       "type": "library",
       "bom-ref": "pkg:cargo/heck@0.5.0",
       "name": "heck",
-      "version": "0.5.0",
+      "version": "0.0.1",
       "purl": "pkg:cargo/heck@0.5.0",
       "licenses": [
         {
@@ -4567,7 +4567,7 @@
       ],
       "properties": [
         {
-          "name": "aero:inventory-scope",
+          "name": "delta:inventory-scope",
           "value": "Pinned engine executable only; see bundled upstream licenses for its dependencies."
         }
       ]
@@ -4579,7 +4579,7 @@
       "dependsOn": []
     },
     {
-      "ref": "pkg:cargo/aerobrowser@0.5.0",
+      "ref": "pkg:cargo/deltabrowser@0.0.1",
       "dependsOn": [
         "pkg:cargo/anyhow@1.0.104",
         "pkg:cargo/axum@0.8.9",

@@ -625,7 +625,7 @@
       "name": "get_computed_style"
     },
     {
-      "description": "Upload from explicitly configured AERO_UPLOAD_ROOT",
+      "description": "Upload from explicitly configured DELTA_UPLOAD_ROOT",
       "inputSchema": {
         "additionalProperties": false,
         "properties": {
@@ -869,7 +869,7 @@
       "name": "test_report"
     },
     {
-      "description": "Current-tab interception; mock requires operator AERO_ALLOW_NETWORK_MOCKS=1",
+      "description": "Current-tab interception; mock requires operator DELTA_ALLOW_NETWORK_MOCKS=1",
       "inputSchema": {
         "additionalProperties": false,
         "properties": {
