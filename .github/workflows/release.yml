@@ -186,10 +186,12 @@ jobs:
       - name: Generate SHA256SUMS
         run: |
           set -euo pipefail
-          cd dist
-          # Every filename the installers will look up must appear here.
-          sha256sum delta-* > SHA256SUMS
-          mv SHA256SUMS ../
+          # Run sha256sum in a subshell so the step's working directory stays
+          # at the workspace root. The previous version did `cd dist`, moved
+          # SHA256SUMS up one level, and then tried to read it back from dist,
+          # so the job died with `cat: SHA256SUMS: No such file or directory`
+          # and the existence check below it looked for dist/dist/<name>.
+          ( cd dist && sha256sum delta-* ) > SHA256SUMS
           cat SHA256SUMS
           # A file listed but absent would make verification silently impossible.
           while read -r _ name; do
