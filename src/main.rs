@@ -24,8 +24,8 @@ use tokio::io::{AsyncBufReadExt, AsyncWriteExt};
 #[command(
     name = "delta",
     version,
-    about = "DeltaBrowser v0.5 — The agent's personal browser by Blackvault Technology (Adarsh Kushwah).",
-    long_about = "DeltaBrowser: a browser for AI agents.\n\nConnects your agent to a real browser with 62 MCP tools: batched tool calls, delta\nsnapshots, persistent sessions, and a kernel-enforced sandbox on Linux x86_64.\n\nInstall:\n  curl -fsSL https://raw.githubusercontent.com/DevAnimecx/deltabrowser/master/scripts/install.sh | sh\n  irm https://raw.githubusercontent.com/DevAnimecx/deltabrowser/master/scripts/install.ps1 | iex; Install-DeltaBrowser\n\nThen run `delta doctor` to verify the install, and `delta connect <agent>` to configure one."
+    about = "Delta Browser v0.0.1 — the browser your AI agent actually needs, by Blackvault Technology.",
+    long_about = "DeltaBrowser: a browser for AI agents.\n\nConnects your agent to a real browser with 62 MCP tools: batched tool calls, delta\nsnapshots, persistent sessions, and a kernel-enforced sandbox on Linux x86_64.\n\nInstall:\n  curl -fsSL https://raw.githubusercontent.com/DevAnimecx/deltabrowser/main/scripts/install.sh | sh\n  irm https://raw.githubusercontent.com/DevAnimecx/deltabrowser/main/scripts/install.ps1 | iex; Install-DeltaBrowser\n\nThen run `delta doctor` to verify the install, and `delta connect <agent>` to configure one."
 )]
 struct Cli {
     #[arg(
