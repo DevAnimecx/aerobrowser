@@ -48,7 +48,7 @@ check('HTTP auth rejects missing token',request('/mcp',{}, {'Authorization':''})
 check('HTTP rejects browser origins',request('/mcp',{}, {'Origin':'https://evil.example'})[0]==401)
 a,b=Client(),Client()
 try:
-    check('61 discoverable tools',len(a.rpc('tools/list')['tools'])==61)
+    check('62 discoverable tools',len(a.rpc('tools/list')['tools'])==62)
     check('resource discovery',len(a.rpc('resources/list')['resources'])==5)
     check('prompt retrieval',bool(a.rpc('prompts/get',{'name':'test-script'})['messages']))
     a.tool('navigate',{'url':PAGE})

@@ -21,7 +21,7 @@ with urllib.request.urlopen(urllib.request.Request(BASE+'/sse',headers=headers),
  e=event(stream);check('SSE JSON-RPC response',json.loads(e['data'])['result']['serverInfo']['name']=='aerobrowser')
  post({'jsonrpc':'2.0','method':'notifications/initialized'})
  post({'jsonrpc':'2.0','id':2,'method':'tools/list'})
- e=event(stream);check('SSE 61 tools',len(json.loads(e['data'])['result']['tools'])==61)
+ e=event(stream);check('SSE 62 tools',len(json.loads(e['data'])['result']['tools'])==62)
 with tempfile.TemporaryDirectory() as td:
  for agent in ['claude-code','claude-desktop','cursor','windsurf','cline','roo-code','vscode','opencode','codex','hermes']:
   path=pathlib.Path(td)/(agent+('.toml' if agent=='codex' else '.yaml' if agent=='hermes' else '.json'))

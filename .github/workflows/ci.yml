@@ -15,7 +15,11 @@ concurrency:
 
 env:
   CARGO_TERM_COLOR: always
-  RUSTFLAGS: -D warnings
+
+# Set RUSTFLAGS in the steps that build or test, not globally: cargo does not
+# rebuild dependencies when RUSTFLAGS changes, so a global setting produces
+# stale artifacts and, when a crate fails to compile, breaks the build in
+# ways that have nothing to do with the change under test.
 
 jobs:
   fmt:
@@ -26,7 +30,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt
-      - run: cargo fmt --check
+      - run: cargo fmt --all --check
 
   lint:
     name: Clippy
@@ -37,6 +41,9 @@ jobs:
         with:
           components: clippy
       - uses: Swatinem/rust-cache@v2
+      # Not --all-features: the bundled-moli feature requires an engine archive
+      # that only the release pipeline produces, so enabling it here would fail
+      # the build on an input that does not exist in a checkout.
       - run: cargo clippy --locked --all-targets -- -D warnings
 
   encoding:
@@ -72,8 +79,13 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - run: cargo test --locked --all-targets
-      - run: cargo build --release --locked
+      - name: Test
+        run: cargo test --locked --all-targets -- --test-threads=1
+        env:
+          # Serialised so environment-sensitive tests cannot race each other.
+          RUST_TEST_THREADS: "1"
+      - name: Release build
+        run: cargo build --release --locked
 
   browser:
     name: Real browser integration
