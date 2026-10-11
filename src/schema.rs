@@ -168,7 +168,7 @@ pub fn tools() -> Vec<Value> {
     ];
     definitions.extend([
         ("get_computed_style","Read computed styles",json!({"ref":{"type":"string"},"selector":{"type":"string"},"properties":{"type":"array","items":{"type":"string"}}}),vec![]),
-        ("upload_file","Upload from explicitly configured AERO_UPLOAD_ROOT",json!({"ref":{"type":"string"},"selector":{"type":"string"},"path":{"type":"string"}}),vec!["path"]),
+        ("upload_file","Upload from explicitly configured DELTA_UPLOAD_ROOT",json!({"ref":{"type":"string"},"selector":{"type":"string"},"path":{"type":"string"}}),vec!["path"]),
         ("drag","Native CDP pointer drag; assert application drop outcome separately",json!({"from_ref":{"type":"string"},"to_ref":{"type":"string"},"from_selector":{"type":"string"},"to_selector":{"type":"string"}}),vec![]),
         ("double_click","Double-click element",locator(),vec![]),
         ("right_click","Right-click element",locator(),vec![]),
@@ -181,7 +181,7 @@ pub fn tools() -> Vec<Value> {
         ("test_assert_url","Assert URL",json!({"expected":{"type":"string"},"contains":{"type":"boolean"}}),vec!["expected"]),
         ("test_assert_visible","Assert element visibility",locator(),vec![]),
         ("test_report","Save last test result as escaped HTML or JSON",json!({"path":{"type":"string"},"format":{"type":"string","enum":["html","json"]}}),vec!["path"]),
-        ("intercept_request","Current-tab interception; mock requires operator AERO_ALLOW_NETWORK_MOCKS=1",json!({"pattern":{"type":"string"},"action":{"type":"string","enum":["block","mock","log","clear"]},"mock_response":{"type":"object"}}),vec!["pattern","action"]),
+        ("intercept_request","Current-tab interception; mock requires operator DELTA_ALLOW_NETWORK_MOCKS=1",json!({"pattern":{"type":"string"},"action":{"type":"string","enum":["block","mock","log","clear"]},"mock_response":{"type":"object"}}),vec!["pattern","action"]),
         ("get_network_log","Read bounded current-tab CDP network events",json!({"filter":{"type":"string"}}),vec![]),
         ("save_har","Save observed CDP HAR; missing measurements -1, bodies omitted",json!({"path":{"type":"string"}}),vec![]),
         ("get_console_logs","Read current-tab console and exception events",json!({"level":{"type":"string"}}),vec![]),

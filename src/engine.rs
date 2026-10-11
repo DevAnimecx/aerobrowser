@@ -144,7 +144,7 @@ impl Engine {
             }
         }
         profile.write.push(work.root.clone());
-        if let Some(upload) = std::env::var_os("AERO_UPLOAD_ROOT") {
+        if let Some(upload) = std::env::var_os("DELTA_UPLOAD_ROOT") {
             profile.read.push(PathBuf::from(upload).canonicalize()?);
         }
         if config.engine == "chrome" {

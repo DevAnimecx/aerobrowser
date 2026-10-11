@@ -274,15 +274,15 @@ pub fn engine_status() -> Value {
 pub fn server_config(exe: &str, engine: &str, endpoint: &str) -> Value {
     let mut env = json!({});
     if engine == "moli" {
-        env["AERO_ENGINE"] = json!("moli");
+        env["DELTA_ENGINE"] = json!("moli");
         if !endpoint.is_empty() && endpoint != "managed" {
-            env["AERO_CDP"] = json!(endpoint);
+            env["DELTA_CDP"] = json!(endpoint);
         }
     } else if engine == "moli-bundled" {
-        env["AERO_ENGINE"] = json!("moli");
+        env["DELTA_ENGINE"] = json!("moli");
     } else {
-        env["AERO_CDP"] = json!(endpoint);
-        env["AERO_ENGINE"] = json!("external");
+        env["DELTA_CDP"] = json!(endpoint);
+        env["DELTA_ENGINE"] = json!("external");
     }
     json!({
         "command": exe,
@@ -598,13 +598,13 @@ fn install_codex(
 
     let mut env = Table::new();
     if engine == "moli" {
-        env["AERO_ENGINE"] = value("moli");
+        env["DELTA_ENGINE"] = value("moli");
         if !endpoint.is_empty() && endpoint != "managed" {
-            env["AERO_CDP"] = value(endpoint);
+            env["DELTA_CDP"] = value(endpoint);
         }
     } else {
-        env["AERO_CDP"] = value(endpoint);
-        env["AERO_ENGINE"] = value("external");
+        env["DELTA_CDP"] = value(endpoint);
+        env["DELTA_ENGINE"] = value("external");
     }
     table["env"] = Item::Table(env);
 
@@ -659,15 +659,15 @@ mod tests {
     #[test]
     fn managed_engine_has_no_cdp_env() {
         let v = server_config("delta", "moli", "managed");
-        assert_eq!(v["env"]["AERO_ENGINE"], json!("moli"));
-        assert!(v["env"]["AERO_CDP"].is_null());
+        assert_eq!(v["env"]["DELTA_ENGINE"], json!("moli"));
+        assert!(v["env"]["DELTA_CDP"].is_null());
     }
 
     #[test]
     fn external_engine_has_cdp_env() {
         let v = server_config("delta", "external", "http://127.0.0.1:9222");
-        assert_eq!(v["env"]["AERO_ENGINE"], json!("external"));
-        assert_eq!(v["env"]["AERO_CDP"], json!("http://127.0.0.1:9222"));
+        assert_eq!(v["env"]["DELTA_ENGINE"], json!("external"));
+        assert_eq!(v["env"]["DELTA_CDP"], json!("http://127.0.0.1:9222"));
     }
 
     #[test]

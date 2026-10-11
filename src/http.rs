@@ -293,12 +293,12 @@ async fn shutdown(State(a): State<App>, h: HeaderMap) -> Response {
     response(StatusCode::ACCEPTED, json!({"status":"stopping"}))
 }
 pub async fn serve(host: &str, port: u16, endpoint: String, token: String) -> anyhow::Result<()> {
-    let file = std::env::var_os("AERO_AUTH_FILE").map(std::path::PathBuf::from);
+    let file = std::env::var_os("DELTA_AUTH_FILE").map(std::path::PathBuf::from);
     let auth = Auth::load(
         if token.is_empty() { None } else { Some(token) },
         file.as_deref(),
     )?;
-    let timeout = std::env::var("AERO_REQUEST_TIMEOUT_MS")
+    let timeout = std::env::var("DELTA_REQUEST_TIMEOUT_MS")
         .ok()
         .map(|s| s.parse::<u64>())
         .transpose()?

@@ -37,7 +37,7 @@ impl Auth {
         };
         if let Some(t) = token {
             if t.len() < 24 {
-                bail!("AERO_TOKEN must contain at least 24 characters");
+                bail!("DELTA_TOKEN must contain at least 24 characters");
             }
             principals.push(Principal {
                 id: "operator".into(),
@@ -50,7 +50,7 @@ impl Auth {
             bail!("At most 64 principals allowed");
         }
         if principals.is_empty() {
-            bail!("Provide AERO_TOKEN or AERO_AUTH_FILE");
+            bail!("Provide DELTA_TOKEN or DELTA_AUTH_FILE");
         }
         let mut ids = HashSet::new();
         let mut hashes = HashSet::new();

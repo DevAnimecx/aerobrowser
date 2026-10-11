@@ -110,8 +110,8 @@ async fn serve(b: &Browser, ctx: &mut Context, name: &str, port: u16) -> Result<
     if ctx.processes.contains_key(&port) {
         bail!("This run already owns port {port}");
     }
-    let file = std::env::var_os("AERO_SERVE_CONFIG").ok_or_else(|| {
-        anyhow!("serve disabled; operator must provide AERO_SERVE_CONFIG with named command arrays")
+    let file = std::env::var_os("DELTA_SERVE_CONFIG").ok_or_else(|| {
+        anyhow!("serve disabled; operator must provide DELTA_SERVE_CONFIG with named command arrays")
     })?;
     let config: Value = serde_json::from_slice(&std::fs::read(file)?)?;
     let entry = &config[name];

@@ -56,7 +56,7 @@ impl Browser {
                 self.restore_transaction(state).await
             }
             "intercept_request"=>{
-                let action=string(&a,"action")?;if action=="mock"{if !std::env::var("AERO_ALLOW_NETWORK_MOCKS").is_ok_and(|v|v=="1"){bail!("Network mocks disabled. Only an operator can opt into testing with AERO_ALLOW_NETWORK_MOCKS=1");}let m=&a["mock_response"];if !m["body"].is_string()||m["status"].as_u64().is_some_and(|n|!(100..=599).contains(&n)){bail!("Mock needs a string body and optional status 100..599");}}
+                let action=string(&a,"action")?;if action=="mock"{if !std::env::var("DELTA_ALLOW_NETWORK_MOCKS").is_ok_and(|v|v=="1"){bail!("Network mocks disabled. Only an operator can opt into testing with DELTA_ALLOW_NETWORK_MOCKS=1");}let m=&a["mock_response"];if !m["body"].is_string()||m["status"].as_u64().is_some_and(|n|!(100..=599).contains(&n)){bail!("Mock needs a string body and optional status 100..599");}}
                 let sid=self.tabs.get(&self.active).ok_or_else(||anyhow!("No active tab"))?.clone();
                 {let mut e=self.cdp.events.lock().unwrap();let rules=e.rules.entry(sid.clone()).or_default();if action=="clear"{rules.clear();}else{if rules.len()>=50{bail!("Rule quota exceeded");}rules.push(a.clone());}}
                 if action=="clear"{self.call("Fetch.disable",json!({})).await?;}else{self.call("Fetch.enable",json!({"patterns":[{"urlPattern":"*","requestStage":"Request"}]})).await?;}

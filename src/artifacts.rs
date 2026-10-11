@@ -10,7 +10,7 @@ pub struct Artifacts {
 }
 impl Artifacts {
     pub fn new() -> Result<Self> {
-        let base = std::env::var_os("AERO_ARTIFACT_ROOT")
+        let base = std::env::var_os("DELTA_ARTIFACT_ROOT")
             .map(PathBuf::from)
             .unwrap_or_else(|| std::env::temp_dir().join("delta-artifacts"));
         std::fs::create_dir_all(&base)?;
@@ -70,9 +70,9 @@ impl Artifacts {
         Ok(serde_json::from_slice(&bytes)?)
     }
     pub fn upload(path: &str) -> Result<PathBuf> {
-        let root = std::env::var_os("AERO_UPLOAD_ROOT").ok_or_else(|| {
+        let root = std::env::var_os("DELTA_UPLOAD_ROOT").ok_or_else(|| {
             anyhow::anyhow!(
-                "Uploads disabled: set AERO_UPLOAD_ROOT to an explicitly authorized directory"
+                "Uploads disabled: set DELTA_UPLOAD_ROOT to an explicitly authorized directory"
             )
         })?;
         let root = PathBuf::from(root).canonicalize()?;
@@ -82,7 +82,7 @@ impl Artifacts {
                 .components()
                 .any(|c| !matches!(c, std::path::Component::Normal(_)))
         {
-            bail!("Upload must be relative to AERO_UPLOAD_ROOT");
+            bail!("Upload must be relative to DELTA_UPLOAD_ROOT");
         }
         let p = root.join(relative).canonicalize()?;
         if !p.starts_with(&root) || !p.is_file() {

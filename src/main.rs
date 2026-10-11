@@ -30,33 +30,33 @@ use tokio::io::{AsyncBufReadExt, AsyncWriteExt};
 struct Cli {
     #[arg(
         long,
-        env = "AERO_CDP",
+        env = "DELTA_CDP",
         default_value = "http://127.0.0.1:9222",
         global = true
     )]
     cdp: String,
     #[arg(
         long,
-        env = "AERO_SERVER",
+        env = "DELTA_SERVER",
         default_value = "http://127.0.0.1:8931",
         global = true
     )]
     server: String,
-    #[arg(long, env = "AERO_TOKEN", global = true, hide_env_values = true)]
+    #[arg(long, env = "DELTA_TOKEN", global = true, hide_env_values = true)]
     token: Option<String>,
-    #[arg(long,env="AERO_ENGINE",default_value=default_engine(),global=true,value_parser=["external","moli","chrome","lightpanda"])]
+    #[arg(long,env="DELTA_ENGINE",default_value=default_engine(),global=true,value_parser=["external","moli","chrome","lightpanda"])]
     engine: String,
-    #[arg(long, env = "AERO_ENGINE_PATH", global = true)]
+    #[arg(long, env = "DELTA_ENGINE_PATH", global = true)]
     engine_path: Option<std::path::PathBuf>,
-    #[arg(long, env = "AERO_PROFILE", default_value = "scrape", global = true)]
+    #[arg(long, env = "DELTA_PROFILE", default_value = "scrape", global = true)]
     profile: String,
     #[arg(long, global = true)]
     no_sandbox: bool,
-    #[arg(long, env = "AERO_MEMORY_LIMIT_MB", global = true)]
+    #[arg(long, env = "DELTA_MEMORY_LIMIT_MB", global = true)]
     memory_limit_mb: Option<u64>,
-    #[arg(long, env = "AERO_PIDS_LIMIT", global = true)]
+    #[arg(long, env = "DELTA_PIDS_LIMIT", global = true)]
     pids_limit: Option<u64>,
-    #[arg(long, env = "AERO_CGROUP_ROOT", global = true)]
+    #[arg(long, env = "DELTA_CGROUP_ROOT", global = true)]
     cgroup_root: Option<std::path::PathBuf>,
     #[command(subcommand)]
     command: Command,
@@ -87,7 +87,7 @@ enum Command {
     Connect {
         /// Agent name, or "all" to configure every detected agent
         agent: String,
-        #[arg(long, env = "AERO_CONFIG_PATH")]
+        #[arg(long, env = "DELTA_CONFIG_PATH")]
         path: Option<std::path::PathBuf>,
         #[arg(long)]
         install: bool,
@@ -359,7 +359,7 @@ async fn remote(c: &Cli, name: &str, args: Value) -> Result<Value> {
     let token = c
         .token
         .as_ref()
-        .ok_or_else(|| anyhow::anyhow!("Set AERO_TOKEN to the HTTP server's token"))?;
+        .ok_or_else(|| anyhow::anyhow!("Set DELTA_TOKEN to the HTTP server's token"))?;
     let r = reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(900))
         .build()?
@@ -376,7 +376,7 @@ async fn remote(c: &Cli, name: &str, args: Value) -> Result<Value> {
     Ok(body["result"].clone())
 }
 async fn stdio(endpoint: String) -> Result<()> {
-    let timeout = std::env::var("AERO_REQUEST_TIMEOUT_MS")
+    let timeout = std::env::var("DELTA_REQUEST_TIMEOUT_MS")
         .ok()
         .map(|v| v.parse::<u64>())
         .transpose()?
@@ -675,7 +675,7 @@ fn load_or_create_token(path: &std::path::Path) -> Result<String> {
 }
 
 fn generate_or_load_token() -> Result<String> {
-    let token_path = std::env::var_os("AERO_TOKEN_FILE")
+    let token_path = std::env::var_os("DELTA_TOKEN_FILE")
         .map(std::path::PathBuf::from)
         .unwrap_or_else(|| {
             profiles::home_dir()
@@ -694,10 +694,10 @@ async fn spawn_daemon(server: &str, token: &str, endpoint: String) -> Result<()>
         .arg(&host)
         .arg("--port")
         .arg(port.to_string())
-        .env("AERO_TOKEN", token)
-        .env("AERO_CDP", &endpoint)
+        .env("DELTA_TOKEN", token)
+        .env("DELTA_CDP", &endpoint)
         .env(
-            "AERO_ENGINE",
+            "DELTA_ENGINE",
             if endpoint.starts_with('{') {
                 "moli"
             } else {
@@ -853,7 +853,7 @@ async fn doctor(c: &Cli) -> Value {
     }
 
     // Token
-    let token_path = std::env::var_os("AERO_TOKEN_FILE")
+    let token_path = std::env::var_os("DELTA_TOKEN_FILE")
         .map(std::path::PathBuf::from)
         .unwrap_or_else(|| {
             profiles::home_dir()
@@ -865,7 +865,7 @@ async fn doctor(c: &Cli) -> Value {
             "auth_token",
             explicit.len() >= 24,
             format!(
-                "AERO_TOKEN supplied via --token/environment ({} chars)",
+                "DELTA_TOKEN supplied via --token/environment ({} chars)",
                 explicit.len()
             ),
             if explicit.len() >= 24 {
@@ -890,7 +890,7 @@ async fn doctor(c: &Cli) -> Value {
                 "auth_token",
                 false,
                 format!("token file {} unreadable: {e}", token_path.display()),
-                Some("Delete the file to regenerate, or point AERO_TOKEN_FILE elsewhere"),
+                Some("Delete the file to regenerate, or point DELTA_TOKEN_FILE elsewhere"),
             ),
         }
     } else {
@@ -1106,7 +1106,7 @@ async fn run() -> Result<()> {
             let token = c
                 .token
                 .as_ref()
-                .ok_or_else(|| anyhow::anyhow!("Set AERO_TOKEN"))?;
+                .ok_or_else(|| anyhow::anyhow!("Set DELTA_TOKEN"))?;
             let response = reqwest::Client::new()
                 .post(format!("{}/admin/shutdown", c.server.trim_end_matches('/')))
                 .bearer_auth(token)

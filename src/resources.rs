@@ -37,7 +37,7 @@ impl Group {
         if !cfg!(target_os = "linux") {
             bail!("Hard resource limits require Linux cgroup v2");
         }
-        let root=root.context("Requested hard limits require --cgroup-root / AERO_CGROUP_ROOT (delegated cgroup v2 directory)")?.canonicalize()?;
+        let root=root.context("Requested hard limits require --cgroup-root / DELTA_CGROUP_ROOT (delegated cgroup v2 directory)")?.canonicalize()?;
         #[cfg(target_os = "linux")]
         unsafe {
             use std::os::unix::ffi::OsStrExt;
