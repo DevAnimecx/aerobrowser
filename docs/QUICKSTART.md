@@ -4,12 +4,12 @@
 
 ```sh
 # Linux / macOS
-curl -fsSL https://raw.githubusercontent.com/DevAnimecx/aerobrowser/master/scripts/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/DevAnimecx/deltabrowser/main/scripts/install.sh | sh
 ```
 
 ```powershell
 # Windows PowerShell
-irm https://raw.githubusercontent.com/DevAnimecx/aerobrowser/master/scripts/install.ps1 | iex; Install-AeroBrowser
+irm https://raw.githubusercontent.com/DevAnimecx/deltabrowser/main/scripts/install.ps1 | iex; Install-DeltaBrowser
 ```
 
 Both installers verify the published SHA-256 before installing, confirm the
@@ -18,11 +18,11 @@ download is a native executable, and remove it if it fails to run afterwards.
 ## 2. Verify the install
 
 ```sh
-aero doctor
+delta doctor
 ```
 
 This checks the engine, sandbox support, ports, auth token, and agent config
-paths, and prints the fix for anything that fails. Run `aero doctor --json` for
+paths, and prints the fix for anything that fails. Run `delta doctor --json` for
 machine-readable output. If you are about to file a bug, include this output.
 
 ## 3. Choose an engine
@@ -30,7 +30,7 @@ machine-readable output. If you are about to file a bug, include this output.
 ### Managed, sandboxed (Linux x86_64 only)
 
 ```sh
-aero connect opencode --install
+delta connect opencode --install
 ```
 
 Downloads the Moli engine and runs each session in a dedicated worker with
@@ -42,7 +42,7 @@ Start a Chromium-family browser with a debugging port:
 
 ```sh
 # Linux
-google-chrome --remote-debugging-port=9222 --no-sandbox --user-data-dir=/tmp/aero-chrome &
+google-chrome --remote-debugging-port=9222 --no-sandbox --user-data-dir=/tmp/delta-chrome &
 
 # macOS
 "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --remote-debugging-port=9222 &
@@ -52,7 +52,7 @@ chrome.exe --remote-debugging-port=9222
 ```
 
 ```sh
-aero connect opencode --install
+delta connect opencode --install
 ```
 
 On Windows and macOS this adopts the browser it finds locally, since managed
@@ -62,10 +62,10 @@ engine downloads are Linux-only. The result reports which engine was chosen in
 ## 4. Connect your agent
 
 ```sh
-aero connect opencode        # or claude-code, cursor, vscode, codex, claude-desktop, ...
+delta connect opencode        # or claude-code, cursor, vscode, codex, claude-desktop, ...
 ```
 
-Then restart your agent. Run `aero profile list` to see every adapter.
+Then restart your agent. Run `delta profile list` to see every adapter.
 
 ## 5. Use the tools
 
@@ -98,17 +98,17 @@ To send only what changed since the last snapshot:
 {"name": "snapshot", "arguments": {"delta": true}}
 ```
 
-`aero tools` prints the full inventory. [API.md](API.md) documents every schema.
+`delta tools` prints the full inventory. [API.md](API.md) documents every schema.
 
 ## 6. Verify a recipe
 
 ```sh
 python3 -m http.server 4173 --bind 127.0.0.1 --directory examples   # fixture server
-aero validate examples/login.aero
-aero test examples/login.aero --report results.html
+delta validate examples/login.delta
+delta test examples/login.delta --report results.html
 ```
 
-`aero validate` takes a `.aero` recipe file, not a URL. It parses the recipe and
+`delta validate` takes a `.delta` recipe file, not a URL. It parses the recipe and
 reports the step count without touching a browser.
 
 ---
@@ -119,24 +119,24 @@ reports the step count without touching a browser.
 
 | Command | Description |
 |---|---|
-| `aero doctor` | Diagnose the install; `--json` for machine output |
-| `aero tools` | Print the tool inventory as JSON |
-| `aero mcp` | MCP server over stdio, HTTP, or SSE |
-| `aero start` | HTTP daemon with MCP, SSE, and CLI endpoints |
-| `aero stop` | Shut down the daemon |
-| `aero connect AGENT` | Configure an agent (`--install` to fetch an engine) |
-| `aero profile list` | List sandbox profiles and whether each is implemented |
-| `aero open URL` | Navigate |
-| `aero snapshot` | Accessibility snapshot (`-i` for interactive only) |
-| `aero click TARGET` | Click; `TARGET` is `@ref` or a CSS selector |
-| `aero fill TARGET VALUE` | Fill a field |
-| `aero eval SCRIPT` | Run JavaScript in the page |
-| `aero screenshot PATH` | Capture (`--full-page` for the full document) |
-| `aero test PATH` | Run a `.aero` recipe (`--report` for HTML or JSON) |
-| `aero validate PATH` | Parse a recipe and report its steps |
-| `aero engine install moli` | Download the managed engine (Linux x86_64) |
-| `aero sandbox probe` | Report sandbox support on this host |
-| `aero config` | Print an MCP server config snippet |
+| `delta doctor` | Diagnose the install; `--json` for machine output |
+| `delta tools` | Print the tool inventory as JSON |
+| `delta mcp` | MCP server over stdio, HTTP, or SSE |
+| `delta start` | HTTP daemon with MCP, SSE, and CLI endpoints |
+| `delta stop` | Shut down the daemon |
+| `delta connect AGENT` | Configure an agent (`--install` to fetch an engine) |
+| `delta profile list` | List sandbox profiles and whether each is implemented |
+| `delta open URL` | Navigate |
+| `delta snapshot` | Accessibility snapshot (`-i` for interactive only) |
+| `delta click TARGET` | Click; `TARGET` is `@ref` or a CSS selector |
+| `delta fill TARGET VALUE` | Fill a field |
+| `delta eval SCRIPT` | Run JavaScript in the page |
+| `delta screenshot PATH` | Capture (`--full-page` for the full document) |
+| `delta test PATH` | Run a `.delta` recipe (`--report` for HTML or JSON) |
+| `delta validate PATH` | Parse a recipe and report its steps |
+| `delta engine install moli` | Download the managed engine (Linux x86_64) |
+| `delta sandbox probe` | Report sandbox support on this host |
+| `delta config` | Print an MCP server config snippet |
 
 Most commands also accept shorthand verbs: `get text`, `get url`, `back`,
 `forward`, `reload`, `tabs`, `new-tab`, `press`, `wait`, `scroll`, `cookies`,
@@ -146,20 +146,20 @@ Most commands also accept shorthand verbs: `get text`, `get url`, `back`,
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `AERO_TOKEN` | auto-generated | Bearer token for the HTTP API. Minimum 24 characters. |
-| `AERO_TOKEN_FILE` | `~/.aero/token.json` | Where the generated token is stored |
-| `AERO_CDP` | `http://127.0.0.1:9222` | External CDP endpoint |
-| `AERO_ENGINE` | `external` | `external`, `moli`, `chrome`, or `lightpanda` |
-| `AERO_ENGINE_PATH` | — | Explicit browser or engine executable |
-| `AERO_SERVER` | `http://127.0.0.1:8931` | Daemon address |
-| `AERO_PROFILE` | `scrape` | Sandbox profile |
-| `AERO_MEMORY_LIMIT_MB` | unlimited | Worker memory ceiling (cgroup v2, Linux) |
-| `AERO_PIDS_LIMIT` | unlimited | Worker process ceiling (cgroup v2, Linux) |
-| `AERO_REQUEST_TIMEOUT_MS` | `120000` | Per-request deadline, 100–900000 |
-| `AERO_AUTH_FILE` | — | Principals file for multiple identities |
-| `AERO_UPLOAD_ROOT` | — | Directory `upload_file` is restricted to |
+| `DELTA_TOKEN` | auto-generated | Bearer token for the HTTP API. Minimum 24 characters. |
+| `DELTA_TOKEN_FILE` | `~/.delta/token.json` | Where the generated token is stored |
+| `DELTA_CDP` | `http://127.0.0.1:9222` | External CDP endpoint |
+| `DELTA_ENGINE` | `external` | `external`, `moli`, `chrome`, or `lightpanda` |
+| `DELTA_ENGINE_PATH` | — | Explicit browser or engine executable |
+| `DELTA_SERVER` | `http://127.0.0.1:8931` | Daemon address |
+| `DELTA_PROFILE` | `scrape` | Sandbox profile |
+| `DELTA_MEMORY_LIMIT_MB` | unlimited | Worker memory ceiling (cgroup v2, Linux) |
+| `DELTA_PIDS_LIMIT` | unlimited | Worker process ceiling (cgroup v2, Linux) |
+| `DELTA_REQUEST_TIMEOUT_MS` | `120000` | Per-request deadline, 100–900000 |
+| `DELTA_AUTH_FILE` | — | Principals file for multiple identities |
+| `DELTA_UPLOAD_ROOT` | — | Directory `upload_file` is restricted to |
 
-`AERO_ENGINE` defaults to `moli` only in builds with the `bundled-moli` feature;
+`DELTA_ENGINE` defaults to `moli` only in builds with the `bundled-moli` feature;
 published binaries default to `external`.
 
 ### Sandbox profiles
@@ -174,32 +174,32 @@ published binaries default to `external`.
 | `web-dev` | **No** | — | Refuses to run |
 | `test` | **No** | — | Refuses to run |
 
-`aero profile list` is the authoritative source. There is no hostname or IP
+`delta profile list` is the authoritative source. There is no hostname or IP
 allowlist: `offline` is all-or-nothing.
 
 ---
 
 ## Troubleshooting
 
-**`aero doctor` shows engine_detected failing.** On Linux x86_64, run
-`aero engine install moli`. Elsewhere, start a browser with
-`--remote-debugging-port=9222` and re-run `aero connect <agent> --install`.
+**`delta doctor` shows engine_detected failing.** On Linux x86_64, run
+`delta engine install moli`. Elsewhere, start a browser with
+`--remote-debugging-port=9222` and re-run `delta connect <agent> --install`.
 
-**The agent does not list AeroBrowser's tools.** Restart it after
-`aero connect`. Check that the config file it reads is the one `aero connect`
-wrote — `aero doctor` lists the paths it checks.
+**The agent does not list Delta Browser's tools.** Restart it after
+`delta connect`. Check that the config file it reads is the one `delta connect`
+wrote — `delta doctor` lists the paths it checks.
 
-**`AERO_TOKEN must contain at least 24 characters`.** The generated token is 44
+**`DELTA_TOKEN must contain at least 24 characters`.** The generated token is 44
 characters, so this means a token was set by hand. Use at least 24, or delete the
 token file to have one generated.
 
 **Sandbox errors on Linux.** Landlock requires kernel 5.13+. Run
-`aero sandbox probe`; it reports what this kernel supports.
+`delta sandbox probe`; it reports what this kernel supports.
 
 **`sandbox: {"supported": false}`.** Expected on Windows and unvalidated on
 macOS. Use an external browser and treat containment as its responsibility.
 
-**The daemon returns 503.** The session actor stopped. Run `aero start`.
+**The daemon returns 503.** The session actor stopped. Run `delta start`.
 
 **A ref is rejected as stale.** Refs are invalidated by navigation and tab
 switches. Take a fresh `snapshot`.

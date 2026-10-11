@@ -12,11 +12,11 @@ hosted installer domain; both installers read directly from the release API.
 | macOS 12+ | — | No | Seatbelt path exists, unvalidated |
 | Windows 10/11 | — | No | **None.** No AppContainer or Job Object |
 
-Landlock requires kernel 5.13 or newer. Run `aero sandbox probe` to confirm what
-your kernel provides; `aero doctor` includes it.
+Landlock requires kernel 5.13 or newer. Run `delta sandbox probe` to confirm what
+your kernel provides; `delta doctor` includes it.
 
 On any platform you can use an external Chromium-family browser instead. That
-browser's own security model is the boundary — AeroBrowser applies no kernel
+browser's own security model is the boundary — Delta Browser applies no kernel
 policy to it.
 
 ---
@@ -25,24 +25,24 @@ policy to it.
 
 ```sh
 # Linux / macOS
-curl -fsSL https://raw.githubusercontent.com/DevAnimecx/aerobrowser/master/scripts/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/DevAnimecx/deltabrowser/main/scripts/install.sh | sh
 ```
 
 ```powershell
 # Windows PowerShell 5.1 or newer
-irm https://raw.githubusercontent.com/DevAnimecx/aerobrowser/master/scripts/install.ps1 | iex; Install-AeroBrowser
+irm https://raw.githubusercontent.com/DevAnimecx/deltabrowser/main/scripts/install.ps1 | iex; Install-DeltaBrowser
 ```
 
 With agent configuration in one step:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/DevAnimecx/aerobrowser/master/scripts/install.sh \
+curl -fsSL https://raw.githubusercontent.com/DevAnimecx/deltabrowser/main/scripts/install.sh \
   | sh -s -- --agent opencode --install-engine
 ```
 
 ```powershell
-irm https://raw.githubusercontent.com/DevAnimecx/aerobrowser/master/scripts/install.ps1 | iex
-Install-AeroBrowser -Agent opencode -InstallEngine
+irm https://raw.githubusercontent.com/DevAnimecx/deltabrowser/main/scripts/install.ps1 | iex
+Install-DeltaBrowser -Agent opencode -InstallEngine
 ```
 
 ### What the installers verify
@@ -55,7 +55,7 @@ Install-AeroBrowser -Agent opencode -InstallEngine
    page can never reach your `PATH`.
 5. Writes to a staging file in the destination directory and moves it into place
    atomically.
-6. Runs `aero --version`. If it fails, the binary is removed.
+6. Runs `delta --version`. If it fails, the binary is removed.
 7. Exits non-zero on any failure.
 
 ### Installer options
@@ -73,7 +73,7 @@ Install-AeroBrowser -Agent opencode -InstallEngine
 On Windows, if your policy blocks script execution:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/DevAnimecx/aerobrowser/master/scripts/install.ps1 | iex; Install-AeroBrowser"
+powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/DevAnimecx/deltabrowser/main/scripts/install.ps1 | iex; Install-DeltaBrowser"
 ```
 
 ---
@@ -83,12 +83,12 @@ powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.c
 Every release includes `SHA256SUMS`. Verify before installing.
 
 ```sh
-VERSION=v0.5.0
-curl -fsSLO "https://github.com/DevAnimecx/aerobrowser/releases/download/${VERSION}/aero-linux-x86_64"
-curl -fsSLO "https://github.com/DevAnimecx/aerobrowser/releases/download/${VERSION}/SHA256SUMS"
+VERSION=v0.0.1
+curl -fsSLO "https://github.com/DevAnimecx/deltabrowser/releases/download/${VERSION}/delta-linux-x86_64"
+curl -fsSLO "https://github.com/DevAnimecx/deltabrowser/releases/download/${VERSION}/SHA256SUMS"
 sha256sum -c SHA256SUMS --ignore-missing
-chmod +x aero-linux-x86_64
-mv aero-linux-x86_64 ~/.local/bin/aero
+chmod +x delta-linux-x86_64
+mv delta-linux-x86_64 ~/.local/bin/delta
 ```
 
 Windows archives ship the `LICENSE` alongside the binary, as BSL-1.1 redistribution
@@ -99,12 +99,12 @@ requires.
 ## Build from source
 
 ```sh
-git clone https://github.com/DevAnimecx/aerobrowser.git
-cd aerobrowser
+git clone https://github.com/DevAnimecx/deltabrowser.git
+cd deltabrowser
 cargo build --release --locked
 ```
 
-The binary is at `target/release/aero` (`aero.exe` on Windows). Use `--locked` so
+The binary is at `target/release/delta` (`delta.exe` on Windows). Use `--locked` so
 the build uses the committed `Cargo.lock`.
 
 To build with the engine bundled in:
@@ -121,11 +121,11 @@ This requires the engine archive produced by the release pipeline; see
 ## Verify the install
 
 ```sh
-aero --version   # aero 0.5.0
-aero doctor      # engine, sandbox, ports, token, agent configs
+delta --version   # delta 0.0.1
+delta doctor      # engine, sandbox, ports, token, agent configs
 ```
 
-`aero doctor` is the check to run when anything misbehaves. Each failing check
+`delta doctor` is the check to run when anything misbehaves. Each failing check
 includes the specific remedy. Include its output in any bug report.
 
 ---
@@ -133,7 +133,7 @@ includes the specific remedy. Include its output in any bug report.
 ## Then
 
 ```sh
-aero connect opencode --install
+delta connect opencode --install
 ```
 
 Restart your agent. See [QUICKSTART.md](QUICKSTART.md) for the full walkthrough.
@@ -143,10 +143,10 @@ Restart your agent. See [QUICKSTART.md](QUICKSTART.md) for the full walkthrough.
 ## Uninstall
 
 ```sh
-rm ~/.local/bin/aero
-rm -rf ~/.aero                      # engine cache and generated token
+rm ~/.local/bin/delta
+rm -rf ~/.delta                      # engine cache and generated token
 ```
 
-Agent configs written by `aero connect` are left in place; remove the `aero` entry
+Agent configs written by `delta connect` are left in place; remove the `delta` entry
 from your agent's MCP config yourself. Backups of pre-existing config files are
 written next to the original with a `.backup-<uuid>.json` suffix.
