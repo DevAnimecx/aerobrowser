@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# AeroBrowser installer for Linux and macOS.
+# DeltaBrowser installer for Linux and macOS.
 #
-#   curl -fsSL https://raw.githubusercontent.com/DevAnimecx/aerobrowser/master/scripts/install.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/DevAnimecx/deltabrowser/main/scripts/install.sh | sh
 #
 # Options:
 #   --dir DIR           Install directory (default: $HOME/.local/bin)
@@ -13,10 +13,10 @@
 #   --no-verify         Skip SHA-256 verification (not recommended)
 set -euo pipefail
 
-REPO="DevAnimecx/aerobrowser"
+REPO="DevAnimecx/deltabrowser"
 RAW_BASE="https://raw.githubusercontent.com/${REPO}"
-INSTALL_DIR="${AERO_INSTALL_DIR:-${HOME}/.local/bin}"
-BIN_NAME="aero"
+INSTALL_DIR="${DELTA_INSTALL_DIR:-${HOME}/.local/bin}"
+BIN_NAME="delta"
 FORCE=0
 NO_PROFILE=0
 NO_VERIFY=0
@@ -51,10 +51,10 @@ dim()   { printf "${DIM}%s${NC}\n" "$*"; }
 
 usage() {
     cat <<EOF
-AeroBrowser installer
+DeltaBrowser installer
 
   --dir DIR           Install directory (default: \$HOME/.local/bin)
-  --version VERSION   Install a specific tag, e.g. v0.5.0 (default: latest release)
+  --version VERSION   Install a specific tag, e.g. v0.0.1 (default: latest release)
   --force             Overwrite an existing installation
   --agent AGENT       Also configure an agent
   --install-engine    Download the managed Moli engine (Linux x86_64 only)
@@ -161,16 +161,16 @@ resolve_version() {
 
 asset_name() {
     case "$PLATFORM" in
-        linux-x86_64)   ASSET="aero-linux-x86_64" ;;
-        linux-aarch64)  ASSET="aero-linux-aarch64" ;;
-        macos-x86_64)   ASSET="aero-macos-x86_64" ;;
-        macos-aarch64)  ASSET="aero-macos-aarch64" ;;
+        linux-x86_64)   ASSET="delta-linux-x86_64" ;;
+        linux-aarch64)  ASSET="delta-linux-aarch64" ;;
+        macos-x86_64)   ASSET="delta-macos-x86_64" ;;
+        macos-aarch64)  ASSET="delta-macos-aarch64" ;;
         *) fail "No published binary for $PLATFORM. Build from source: cargo build --release --locked" ;;
     esac
 }
 
 # Confirms the payload is a native executable before it ever reaches PATH. A
-# 404 HTML body saved as `aero` would otherwise install and then fail confusingly.
+# 404 HTML body saved as `delta` would otherwise install and then fail confusingly.
 looks_like_binary() {
     local file="$1"
     local magic
@@ -216,7 +216,7 @@ install_engine() {
     [ "$AUTO_INSTALL_ENGINE" -eq 1 ] || return 0
     [ "$ENGINE_INSTALLED" -eq 1 ] && return 0
 
-    local aero="$INSTALL_DIR/$BIN_NAME"
+    local delta="$INSTALL_DIR/$BIN_NAME"
     if [ "$PLATFORM" != "linux-x86_64" ]; then
         warn "Managed Moli engine downloads are Linux x86_64 only."
         info "On $PLATFORM, start a local browser instead:"
@@ -224,22 +224,22 @@ install_engine() {
         return 0
     fi
     info "Installing the managed Moli engine..."
-    if "$aero" engine install moli; then
+    if "$delta" engine install moli; then
         ENGINE_INSTALLED=1
         ok "Managed engine installed"
     else
-        warn "Engine install failed; AeroBrowser will fall back to an external browser."
+        warn "Engine install failed; DeltaBrowser will fall back to an external browser."
     fi
 }
 
 install_binary() {
-    local aero="$INSTALL_DIR/$BIN_NAME"
+    local delta="$INSTALL_DIR/$BIN_NAME"
 
-    if [ "$FORCE" -eq 0 ] && [ -x "$aero" ]; then
+    if [ "$FORCE" -eq 0 ] && [ -x "$delta" ]; then
         local existing
-        existing=$("$aero" --version 2>/dev/null || echo "unknown")
+        existing=$("$delta" --version 2>/dev/null || echo "unknown")
         ok "Already installed: $existing"
-        info "Location: $aero"
+        info "Location: $delta"
         info "Re-run with --force to upgrade."
         return 0
     fi
@@ -265,15 +265,15 @@ install_binary() {
     local staged="$INSTALL_DIR/.${BIN_NAME}.new.$$"
     cp "$payload" "$staged"
     chmod 755 "$staged"
-    mv -f "$staged" "$aero"
+    mv -f "$staged" "$delta"
 
-    if ! "$aero" --version >/dev/null 2>&1; then
-        rm -f "$aero"
+    if ! "$delta" --version >/dev/null 2>&1; then
+        rm -f "$delta"
         fail "Installed binary did not run. Removing it."
     fi
 
-    ok "Installed $("$aero" --version)"
-    dim "  $aero"
+    ok "Installed $("$delta" --version)"
+    dim "  $delta"
 }
 
 update_profile() {
@@ -294,7 +294,7 @@ update_profile() {
     fi
     {
         printf '\n'
-        printf '# AeroBrowser\n'
+        printf '# DeltaBrowser\n'
         printf 'export PATH="%s:$PATH"\n' "$INSTALL_DIR"
     } >> "$profile"
     warn "Added $INSTALL_DIR to PATH in $profile"
@@ -303,36 +303,36 @@ update_profile() {
 
 configure_agent() {
     [ -n "$AGENT" ] || return 0
-    local aero="$INSTALL_DIR/$BIN_NAME"
+    local delta="$INSTALL_DIR/$BIN_NAME"
     step "Configuring agent: $AGENT"
 
-    if ! "$aero" connect "$AGENT" --install; then
+    if ! "$delta" connect "$AGENT" --install; then
         fail "Could not configure agent '$AGENT'.
 Fix the problems reported above, or run:
-  $aero doctor"
+  $delta doctor"
     fi
     ok "Agent '$AGENT' configured"
 }
 
 summary() {
-    local aero="$INSTALL_DIR/$BIN_NAME"
+    local delta="$INSTALL_DIR/$BIN_NAME"
     echo
-    ok "AeroBrowser is ready."
+    ok "DeltaBrowser is ready."
     echo
-    printf "  %sCheck the install:  %s doctor\n" "${BOLD}" "$aero"
+    printf "  %sCheck the install:  %s doctor\n" "${BOLD}" "$delta"
     if [ "$PLATFORM" = "linux-x86_64" ] && [ "$ENGINE_INSTALLED" -eq 1 ]; then
-        printf "  %sConnect an agent:   %s connect opencode\n" "${BOLD}" "$aero"
+        printf "  %sConnect an agent:   %s connect opencode\n" "${BOLD}" "$delta"
     elif [ "$AGENT" != "" ]; then
         printf "  %sRestart your agent to load the MCP server.\n" "${BOLD}"
     else
-        printf "  %sManaged browsing:   %s connect opencode --install\n" "${BOLD}" "$aero"
+        printf "  %sManaged browsing:   %s connect opencode --install\n" "${BOLD}" "$delta"
         printf "  %s  or start a browser: chrome --remote-debugging-port=9222 &\n" "${DIM}"
     fi
     echo
 }
 
 main() {
-    printf "${BOLD}AeroBrowser installer${NC}\n"
+    printf "${BOLD}DeltaBrowser installer${NC}\n"
     detect_platform
     resolve_version
     asset_name
