@@ -62,6 +62,26 @@ delta doctor
 
 Works on **Linux, macOS, Windows, and WSL**. No admin rights required — everything installs to your user directory, and the installer verifies the download's SHA-256 before it reaches your `PATH`.
 
+### Questions people actually ask
+
+**What is an MCP browser?**
+An MCP server that exposes browser control as tools an AI agent can call over the [Model Context Protocol](https://modelcontextprotocol.io), so the agent can navigate, click, type and read pages on its own instead of asking a human to do it.
+
+**Do I need Playwright, Puppeteer, Selenium, or Node.js?**
+No. Delta Browser is a single Rust binary. The alternatives are libraries your code drives call-by-call; Delta Browser is a server the agent talks to.
+
+**Is it safe to let an agent browse untrusted pages?**
+On Linux x86_64, yes, within a boundary: each session runs in its own worker process with a Landlock filesystem policy and a seccomp syscall filter applied before the browser starts. On Windows and macOS there is no kernel isolation, and `server_status` says so rather than implying protection that is not there.
+
+**Does it cost anything per run?**
+No. No API keys, no hosted service, no per-run billing. You run it against a browser on your own machine.
+
+**Is it open source?**
+It is source-available under the Business Source License 1.1, and converts to Apache-2.0 on 2030-01-01. Free for personal, research, educational and internal business use below USD 10M annual revenue. [Full answer](docs/FAQ.md#is-delta-browser-open-source).
+
+**How do I get from AeroBrowser to Delta Browser?**
+Every renamed name is listed, and there are four steps: [migration guide](docs/MIGRATION.md).
+
 ---
 
 ## Why an agent needs its own browser
