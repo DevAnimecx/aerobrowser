@@ -146,6 +146,18 @@ function Install-DeltaBrowser {
         Write-Ok "Already installed: $existing"
         Write-Info "Location: $DELTA"
         Write-Info "Re-run with -Force to upgrade."
+        # Configuring an agent is not a side effect of downloading the binary,
+        # so it still has to happen when there is nothing to download. This path
+        # used to return straight to the summary, which meant -Agent was
+        # silently ignored on every run after the first.
+        if ($Agent) {
+            Write-Step "Configuring agent: $Agent"
+            & $DELTA connect $Agent --install
+            if ($LASTEXITCODE -ne 0) {
+                Write-Fail "Could not configure agent '$Agent'. Run '$DELTA doctor' to diagnose."
+            }
+            Write-Ok "Agent '$Agent' configured"
+        }
         Invoke-DeltaSummary -DeltaPath $DELTA -Agent $Agent -InstallEngine:$InstallEngine
         return
     }
@@ -283,21 +295,23 @@ function Invoke-DeltaSummary {
     Write-Host ""
 }
 
-# Do not self-invoke. The documented form is
+# Three documented ways in, and each must install exactly once:
 #
-#   irm .../install.ps1 | iex; Install-DeltaBrowser [-Agent opencode]
+#   .\scripts\install.ps1 -Agent opencode      -> run it, forwarding the parameters
+#   irm .../install.ps1 | iex                 -> load it, tell the user what to type
+#   irm .../install.ps1 | iex; Install-DeltaBrowser -Agent opencode
+#                                              -> load it, the user runs the function
 #
-# and an unconditional call here made that install twice: once with defaults
-# from the auto-invoke, then again with the parameters the user typed. Two
-# downloads and two rounds of output for one install is confusing enough to
-# look like the second one is the one that mattered.
-#
-# `irm | iex` on its own now prints what to type instead of silently doing
-# nothing, which was the only reason the auto-invoke existed.
-if ($MyInvocation.InvocationName -ne '.') {
+# An unconditional call here used to fire in all three, so the documented
+# pipe-to-iex form downloaded and installed twice. Detect the context instead:
+# Invoke-Expression is the only one that must not self-run.
+if ($MyInvocation.InvocationName -eq 'Invoke-Expression') {
     Write-Host ""
     Write-Host "  DeltaBrowser installer loaded." -ForegroundColor Cyan
     Write-Host "  Now run:  Install-DeltaBrowser" -ForegroundColor White
     Write-Host "  Or with an agent:  Install-DeltaBrowser -Agent opencode" -ForegroundColor DarkGray
     Write-Host ""
+} else {
+    Install-DeltaBrowser -InstallDir $InstallDir -Version $Version -Force:$Force `
+        -Agent $Agent -NoProfile:$NoProfile -InstallEngine:$InstallEngine -NoVerify:$NoVerify
 }
