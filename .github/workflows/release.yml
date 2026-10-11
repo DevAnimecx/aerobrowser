@@ -241,6 +241,11 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      # attest-build-provenance signs with the runner's OIDC identity, which
+      # needs id-token. Without it the release publishes and the attestation
+      # step then fails, leaving a green-looking release with no provenance.
+      id-token: write
+      attestations: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
@@ -269,16 +274,40 @@ jobs:
           {
             cat metadata/PROVENANCE.md
             echo
+            echo "### What this release is"
+            echo
+            echo "Delta Browser \`${TAG}\`: a Model Context Protocol server that gives an AI agent a"
+            echo "real browser. 62 tools over MCP, batched tool calls, delta snapshots, persistent"
+            echo "sessions, and a kernel-enforced sandbox on Linux x86_64."
+            echo
+            echo "This is the first release published under the Delta Browser name."
+            echo
+            echo "### Breaking changes"
+            echo
+            echo "| Before (AeroBrowser) | Now (Delta Browser) |"
+            echo "| --- | --- |"
+            echo "| \`aero <command>\` | \`delta <command>\` |"
+            echo "| crate \`aerobrowser\` | crate \`deltabrowser\` |"
+            echo "| \`AERO_*\` variables | \`DELTA_*\` variables |"
+            echo "| \`~/.aero/\` runtime state | \`~/.delta/\` |"
+            echo "| \`.aero-token.json\` | \`.delta-token.json\` |"
+            echo "| \`Install-AeroBrowser\` | \`Install-DeltaBrowser\` |"
+            echo "| \`mcpServers.aero\` | \`mcpServers.delta\` |"
+            echo "| \`aero-<platform>\` assets | \`delta-<platform>\` assets |"
+            echo
+            echo "There are no compatibility shims with the old names. Full migration table:"
+            echo "https://github.com/DevAnimecx/deltabrowser/blob/main/CHANGELOG.md"
+            echo
             echo "### Install"
             echo
             echo '```sh'
-            echo "# Linux / macOS"
+            echo "# Linux / macOS / WSL"
             echo "curl -fsSL https://raw.githubusercontent.com/DevAnimecx/deltabrowser/main/scripts/install.sh | sh"
             echo '```'
             echo
             echo '```powershell'
             echo "# Windows PowerShell"
-            echo "irm https://raw.githubusercontent.com/DevAnimecx/deltabrowser/main/scripts/install.ps1 | iex; Install-DeltaBrowser -Agent opencode"
+            echo "irm https://raw.githubusercontent.com/DevAnimecx/deltabrowser/main/scripts/install.ps1 | iex; Install-DeltaBrowser"
             echo '```'
             echo
             echo "Both installers verify the \`SHA256SUMS\` digest published with this release."
