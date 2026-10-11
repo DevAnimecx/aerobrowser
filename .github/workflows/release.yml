@@ -25,13 +25,17 @@ jobs:
       - id: resolve
         run: |
           set -euo pipefail
-          CARGO_VERSION=$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1)
+          # `[^"]*` rather than `.*`: a greedy `.*` can capture a trailing
+          # newline when the capture group is the last thing on the line, which
+          # makes the tag compare fail against an otherwise identical version.
+          # tr then removes any stray carriage return from a CRLF checkout.
+          CARGO_VERSION=$(sed -n 's/^version[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p' Cargo.toml | head -1 | tr -d '[:space:]')
           if [ -z "$CARGO_VERSION" ]; then
             echo "::error::could not read version from Cargo.toml"; exit 1
           fi
           TAG="${GITHUB_REF#refs/tags/}"
           if [ -z "$TAG" ]; then TAG="${{ inputs.version }}"; fi
-          # Publishing v9.9.9 with a 0.5.0 binary would make every checksum wrong.
+          # Publishing v9.9.9 with a 0.0.1 binary would make every checksum wrong.
           if [ "$TAG" != "v${CARGO_VERSION}" ]; then
             echo "::error::tag '$TAG' does not match Cargo.toml version 'v${CARGO_VERSION}'"
             exit 1
