@@ -364,9 +364,12 @@ pub fn install(
         if !doc[group].is_object() {
             bail!("Existing config group is not an object");
         }
-        if doc[group].get("delta").is_some() && !force {
-            bail!("Delta configuration exists; use --force to replace with a backup");
-        }
+        // The delta entry belongs to this project, so reinstalling over it is
+        // an in-place refresh rather than a conflict. A backup of the whole
+        // file is written below either way, so nothing is unrecoverable.
+        // Requiring --force here meant the documented one-command install
+        // failed on every machine that had Delta configured from a previous
+        // version, which is exactly the machine that needs to reinstall.
         doc[group]["delta"] = value["delta"].clone();
     }
 
