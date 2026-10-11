@@ -10,5 +10,5 @@ printf '%s' "$$" > "$root/supervisor/cgroup.procs"
 [[ -z "$(cat "$root/cgroup.procs")" ]] || { echo 'Other processes remain in delegated root; refusing controller changes' >&2; exit 1; }
 printf '+memory +pids' > "$root/cgroup.subtree_control"
 printf '+memory +pids' > "$root/workers/cgroup.subtree_control"
-export AERO_CGROUP_ROOT="$root/workers"
+export DELTA_CGROUP_ROOT="$root/workers"
 exec "$@"
