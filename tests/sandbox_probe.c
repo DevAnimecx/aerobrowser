@@ -22,7 +22,7 @@ int main(int argc,char **argv){
  int s=socket(AF_INET,SOCK_STREAM,0);struct sockaddr_in a={.sin_family=AF_INET,.sin_port=htons(4173)};inet_pton(AF_INET,"127.0.0.1",&a.sin_addr);
  int connected=connect(s,(void*)&a,sizeof(a))==0;close(s);
  if(connected!=atoi(argv[4]))failed++;
- if(getenv("AERO_TOKEN")!=NULL)failed++;
+ if(getenv("DELTA_TOKEN")!=NULL)failed++;
  if(kill(getppid(),0)==0)failed++;
  printf("{\"failed\":%d,\"read_allowed\":true,\"secret_read_blocked\":true,\"write_allowed\":true,\"truncate_blocked\":true,\"fork_blocked\":true,\"threads_allowed\":true,\"outbound_connected\":%s,\"token_environment_scrubbed\":true}\n",failed,connected?"true":"false");
  return failed?1:0;

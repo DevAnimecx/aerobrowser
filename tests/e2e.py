@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Requires running CDP browser, aero HTTP server and examples fixture server.
-Uses only Python standard library. AERO_TOKEN must match server.
+"""Requires running CDP browser, delta HTTP server and examples fixture server.
+Uses only Python standard library. DELTA_TOKEN must match server.
 """
 import base64, json, os, subprocess, urllib.request, urllib.error
 from pathlib import Path
-BASE=os.environ.get('AERO_SERVER','http://127.0.0.1:8931')
-TOKEN=os.environ['AERO_TOKEN']
-BIN=os.environ.get('AERO_BIN','target/debug/aero')
+BASE=os.environ.get('DELTA_SERVER','http://127.0.0.1:8931')
+TOKEN=os.environ['DELTA_TOKEN']
+BIN=os.environ.get('DELTA_BIN','target/debug/delta')
 PAGE='http://127.0.0.1:4173/login.html'
 checks=[]
 def check(name, condition):
@@ -23,7 +23,7 @@ def request(path, value=None, headers=None, method=None):
 class Client:
     def __init__(self):
         self.seq=0
-        code,h,r=request('/mcp',{'jsonrpc':'2.0','id':0,'method':'initialize','params':{'protocolVersion':'2025-11-25','capabilities':{},'clientInfo':{'name':'aero-e2e','version':'1'}}})
+        code,h,r=request('/mcp',{'jsonrpc':'2.0','id':0,'method':'initialize','params':{'protocolVersion':'2025-11-25','capabilities':{},'clientInfo':{'name':'delta-e2e','version':'1'}}})
         assert code==200,r
         self.h={'mcp-session-id':h['mcp-session-id'],'mcp-protocol-version':'2025-11-25'}
         code,_,_=request('/mcp',{'jsonrpc':'2.0','method':'notifications/initialized'},self.h)
@@ -52,7 +52,7 @@ try:
     check('resource discovery',len(a.rpc('resources/list')['resources'])==5)
     check('prompt retrieval',bool(a.rpc('prompts/get',{'name':'test-script'})['messages']))
     a.tool('navigate',{'url':PAGE})
-    check('title',a.tool('get_title')=='Aero Test App')
+    check('title',a.tool('get_title')=='Delta Test App')
     text=a.tool('snapshot',{'interactive_only':True})
     check('accessibility snapshot', 'textbox "Email"' in text)
     import re
@@ -89,7 +89,7 @@ try:
     check('raw CDP not exposed',a.tool('cdp_raw',{'method':'Browser.close'},error=True)['isError'])
     check('schema type validation',a.tool('fill',{'value':123},error=True)['isError'])
     check('wait timeout',a.tool('wait_for',{'selector':'#missing','timeout_ms':10},error=True)['isError'])
-    steps=Path('examples/login.aero').read_text()
+    steps=Path('examples/login.delta').read_text()
     report=a.tool('test_run',{'steps':steps})
     check('DSL 10-step login',report['passed']==10 and report['failed']==0)
     Path('artifacts').mkdir(exist_ok=True)
@@ -97,7 +97,7 @@ try:
     bad=a.tool('test_run',{'steps':'assert title "Wrong"\nclick "button"'})
     check('DSL fail-fast and skipped steps',bad['failed']==1 and bad['skipped']==1)
     check('DSL no arbitrary processes',a.tool('test_run',{'steps':'serve "rm -rf /"'},error=True)['isError'])
-    check('honest status','no Aero kernel policy' in a.tool('server_status')['sandbox'])
+    check('honest status','no Delta kernel policy' in a.tool('server_status')['sandbox'])
 finally:
     check('session deletion',a.close()==204 and b.close()==204)
 

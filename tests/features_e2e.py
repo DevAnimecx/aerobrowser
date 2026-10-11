@@ -8,9 +8,9 @@ Covers the three things 0.5 added or changed:
   3. correctness fixes - the error-to-success conversions and the token length
 
 Requires a CDP browser on :9222, a fixture server on :4173, and a running
-`aero mcp --transport http` on :8931. See CONTRIBUTING.md.
+`delta mcp --transport http` on :8931. See CONTRIBUTING.md.
 
-    python3 tests/v05_features_e2e.py
+    python3 tests/features_e2e.py
 """
 
 import json
@@ -19,9 +19,9 @@ import sys
 import urllib.error
 import urllib.request
 
-TOKEN = os.environ.get("AERO_TOKEN", "")
-SERVER = os.environ.get("AERO_SERVER", "http://127.0.0.1:8931")
-FIXTURE = os.environ.get("AERO_FIXTURE", "http://127.0.0.1:4173")
+TOKEN = os.environ.get("DELTA_TOKEN", "")
+SERVER = os.environ.get("DELTA_SERVER", "http://127.0.0.1:8931")
+FIXTURE = os.environ.get("DELTA_FIXTURE", "http://127.0.0.1:4173")
 PAGE = FIXTURE + "/login.html"
 CALL_ID = [0]
 
@@ -65,7 +65,7 @@ def call(tool, arguments=None):
 
 def main():
     if not TOKEN:
-        print("AERO_TOKEN is required")
+        print("DELTA_TOKEN is required")
         return 2
 
     try:
@@ -89,7 +89,7 @@ def main():
     check("preserves order", [r["name"] for r in result["results"]] == ["navigate", "get_title", "get_url"])
     check(
         "navigation returned the title",
-        "aero test app" in str(result["results"][0]["result"].get("title", "")).lower(),
+        "delta test app" in str(result["results"][0]["result"].get("title", "")).lower(),
         result["results"][0],
     )
 

@@ -5,13 +5,13 @@ Requires the documented v0.3 validation server and delegated cgroup controls.
 import os,json,urllib.request,urllib.error,time,threading,uuid,tempfile,sqlite3,html,base64
 from http.server import ThreadingHTTPServer,BaseHTTPRequestHandler
 from pathlib import Path
-BASE=os.environ.get('AERO_SERVER','http://127.0.0.1:8931')
+BASE=os.environ.get('DELTA_SERVER','http://127.0.0.1:8931')
 checks=[]; evidence={}
 def check(name,value):
  assert value,name
  checks.append(name);print('PASS',name,flush=True)
 def request(owner,path,value=None,method=None,sid=None):
- headers={'Authorization':'Bearer aero-v03-test-only-token-'+owner}
+ headers={'Authorization':'Bearer delta-v03-test-only-token-'+owner}
  if value is not None:headers['Content-Type']='application/json'
  if sid:headers['mcp-session-id']=sid
  req=urllib.request.Request(BASE+path,data=json.dumps(value).encode() if value is not None else None,headers=headers,method=method)
@@ -65,11 +65,11 @@ with tempfile.TemporaryDirectory() as td:
   title='real-write-'+uuid.uuid4().hex;a.tool('fill',{'selector':'#title','value':title});a.tool('click',{'selector':'button'});a.tool('wait_for',{'selector':'li'})
   check('real form persisted to SQLite',sqlite3.connect(db).execute('select title from tasks').fetchone()[0]==title)
   a.tool('reload');check('persisted record survives browser reload',title in a.tool('get_text',{'selector':'body'}))
-  image=a.tool('screenshot');data=base64.b64decode(image['data']);check('real rendered PNG',data.startswith(b'\x89PNG'));Path(os.environ.get('AERO_EVIDENCE_DIR','artifacts/v04')+'/sqlite-app.png').write_bytes(data)
-  pdf=a.tool('save_pdf');data=base64.b64decode(pdf['data']);check('real browser PDF',data.startswith(b'%PDF'));Path(os.environ.get('AERO_EVIDENCE_DIR','artifacts/v04')+'/sqlite-app.pdf').write_bytes(data)
+  image=a.tool('screenshot');data=base64.b64decode(image['data']);check('real rendered PNG',data.startswith(b'\x89PNG'));Path(os.environ.get('DELTA_EVIDENCE_DIR','artifacts/v04')+'/sqlite-app.png').write_bytes(data)
+  pdf=a.tool('save_pdf');data=base64.b64decode(pdf['data']);check('real browser PDF',data.startswith(b'%PDF'));Path(os.environ.get('DELTA_EVIDENCE_DIR','artifacts/v04')+'/sqlite-app.pdf').write_bytes(data)
   a.tool('drag',{'from_selector':'#source','to_selector':'#target'});events=a.tool('evaluate',{'script':'pointerEvidence'});evidence['pointer_events']=events
   check('native drag generated pointer events',any(e['type']=='mousedown' for e in events) and any(e['type']=='mouseup' for e in events))
-  har=a.tool('save_har')['har'];Path(os.environ.get('AERO_EVIDENCE_DIR','artifacts/v04')+'/network.har').write_text(json.dumps(har,indent=2));entries=har['log']['entries']
+  har=a.tool('save_har')['har'];Path(os.environ.get('DELTA_EVIDENCE_DIR','artifacts/v04')+'/network.har').write_text(json.dumps(har,indent=2));entries=har['log']['entries']
   check('HAR contains completed observed requests',len(entries)>0)
   check('redirect chain preserved',any(e['response']['status']==302 for e in entries))
   check('no estimated HAR timing flags',all('_timingEstimate' not in e and e['_source']=='CDP Network events' for e in entries))
@@ -94,7 +94,7 @@ with tempfile.TemporaryDirectory() as td:
   a.tool('close');a.tool('navigate',{'url':'https://example.com/','wait_until':'networkidle'})
   live={'url':a.tool('get_url'),'title':a.tool('get_title'),'text':a.tool('get_text',{'selector':'body'}),'performance':a.tool('get_performance'),'memory':a.tool('get_memory_usage')};evidence['public_https']=live
   check('live public HTTPS page fetched',live['title']=='Example Domain' and live['url'].startswith('https://example.com'))
-  live_har=a.tool('save_har')['har'];Path(os.environ.get('AERO_EVIDENCE_DIR','artifacts/v04')+'/public-https.har').write_text(json.dumps(live_har,indent=2))
+  live_har=a.tool('save_har')['har'];Path(os.environ.get('DELTA_EVIDENCE_DIR','artifacts/v04')+'/public-https.har').write_text(json.dumps(live_har,indent=2))
   check('live HTTPS response captured',any(e['response']['status']==200 and e['request']['url'].startswith('https://example.com') for e in live_har['log']['entries']))
  finally:a.close();b.close();server.shutdown()
-Path(os.environ.get('AERO_EVIDENCE_DIR','artifacts/v04')+'/real-e2e.json').write_text(json.dumps({'passed':len(checks),'checks':checks,'evidence':evidence},indent=2));print('TOTAL',len(checks))
+Path(os.environ.get('DELTA_EVIDENCE_DIR','artifacts/v04')+'/real-e2e.json').write_text(json.dumps({'passed':len(checks),'checks':checks,'evidence':evidence},indent=2));print('TOTAL',len(checks))

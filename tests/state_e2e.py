@@ -3,7 +3,7 @@
 import os,json,subprocess,threading,uuid,copy,base64,time
 from pathlib import Path
 from http.server import ThreadingHTTPServer,BaseHTTPRequestHandler
-BIN=os.environ.get('AERO_BIN','target/release/aero');MOLI=os.environ['MOLI_PATH']
+BIN=os.environ.get('DELTA_BIN','target/release/delta');MOLI=os.environ['MOLI_PATH']
 checks=[];evidence={}
 def check(n,v):assert v,n;checks.append(n);print('PASS',n,flush=True)
 slow_entered=threading.Event()
@@ -33,7 +33,7 @@ def tool(name,args={},error=False):
  assert not r['result'].get('isError'),r
  return r['result']['structuredContent']['result']
 try:
- check('release identifies 0.5',rpc('initialize',{'protocolVersion':'2025-11-25'})['result']['serverInfo']['version']==os.environ.get('AERO_EXPECT_VERSION','0.5.0'));rpc('notifications/initialized',{},True)
+ check('release identifies 0.5',rpc('initialize',{'protocolVersion':'2025-11-25'})['result']['serverInfo']['version']==os.environ.get('DELTA_EXPECT_VERSION','0.0.1'));rpc('notifications/initialized',{},True)
  tool('navigate',{'url':url+'/one'});nonce=uuid.uuid4().hex
  tool('evaluate',{'script':f'localStorage.setItem("saved",{json.dumps(nonce)});sessionStorage.setItem("tab","first");true'})
  tool('set_cookie',{'name':'saved_cookie','value':nonce,'url':url})
