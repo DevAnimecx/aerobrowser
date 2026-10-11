@@ -12,8 +12,8 @@ body:
   - type: input
     id: version
     attributes:
-      label: AeroBrowser version
-      placeholder: "aero --version output"
+      label: DeltaBrowser version
+      placeholder: "delta --version output"
     validations:
       required: true
 
@@ -33,14 +33,14 @@ body:
         - Managed Moli
         - External Chrome/Edge/Chromium
         - Lightpanda
-        - Not sure (run `aero doctor`)
+        - Not sure (run `delta doctor`)
     validations:
       required: true
 
   - type: textarea
     id: doctor
     attributes:
-      label: Output of `aero doctor`
+      label: Output of `delta doctor`
       render: shell
       description: Paste the full output. It usually identifies the problem directly.
     validations:
@@ -50,9 +50,9 @@ body:
     id: reproduction
     attributes:
       label: Reproduction
-      description: Exact commands, tool calls, or a `.aero` recipe.
+      description: Exact commands, tool calls, or a `.delta` recipe.
       placeholder: |
-        aero --engine moli mcp
+        delta --engine moli mcp
         # then: snapshot { "interactive_only": true }
     validations:
       required: true

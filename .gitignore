@@ -9,10 +9,10 @@
 
 # Local agent/tooling state (not part of the distributed product)
 /.opencode/
-/.aero/
+/.delta/
 
 # Files written next to user agent configs at runtime
-*.aero-skill.md
+*.delta-skill.md
 *.backup-*.json
 
 # Transient build/CI console dumps
@@ -20,7 +20,7 @@
 *-build.txt
 chrome.log
 fixture.log
-aero.log
+delta.log
 fixture-server.log
 
 # Editor / OS
