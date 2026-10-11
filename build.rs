@@ -1,8 +1,8 @@
 fn main() {
-    println!("cargo:rerun-if-env-changed=AERO_BUNDLED_MOLI_ARCHIVE");
+    println!("cargo:rerun-if-env-changed=DELTA_BUNDLED_MOLI_ARCHIVE");
     if std::env::var_os("CARGO_FEATURE_BUNDLED_MOLI").is_some() {
-        let source = std::env::var_os("AERO_BUNDLED_MOLI_ARCHIVE").expect(
-            "bundled-moli needs AERO_BUNDLED_MOLI_ARCHIVE pointing to the pinned release archive",
+        let source = std::env::var_os("DELTA_BUNDLED_MOLI_ARCHIVE").expect(
+            "bundled-moli needs DELTA_BUNDLED_MOLI_ARCHIVE pointing to the pinned release archive",
         );
         println!(
             "cargo:rerun-if-changed={}",

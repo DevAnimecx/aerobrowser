@@ -1,6 +1,6 @@
 # Local fixture login flow
 open http://127.0.0.1:4173/login.html
-assert title "Aero Test App"
+assert title "Delta Test App"
 wait "#email" 3000
 fill "#email" "test@example.com"
 fill "#password" "fixture-only-password"
