@@ -12,7 +12,7 @@ impl Artifacts {
     pub fn new() -> Result<Self> {
         let base = std::env::var_os("AERO_ARTIFACT_ROOT")
             .map(PathBuf::from)
-            .unwrap_or_else(|| std::env::temp_dir().join("aero-artifacts"));
+            .unwrap_or_else(|| std::env::temp_dir().join("delta-artifacts"));
         std::fs::create_dir_all(&base)?;
         let root = base.join(uuid::Uuid::new_v4().to_string());
         let d = std::fs::DirBuilder::new();

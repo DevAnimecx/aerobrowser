@@ -159,7 +159,7 @@ impl Browser {
         let mut active = None;
         for t in state["tabs"].as_array().unwrap() {
             let tab = self.new_tab("about:blank").await?;
-            let marker = format!("__aero_restore_{}", uuid::Uuid::new_v4().simple());
+            let marker = format!("__delta_restore_{}", uuid::Uuid::new_v4().simple());
             if t["origin"] != "null" {
                 let source=format!("(()=>{{if(window.top!==window||location.origin!=={})return;try{{localStorage.clear();sessionStorage.clear();for(const [k,v]of Object.entries({}))localStorage.setItem(k,v);for(const [k,v]of Object.entries({}))sessionStorage.setItem(k,v);globalThis[{}]={{ok:true}};}}catch(e){{globalThis[{}]={{ok:false,error:String(e)}};}}}})()",t["origin"],t["localStorage"],t["sessionStorage"],json!(marker),json!(marker));
                 let r = self

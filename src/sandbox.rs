@@ -88,7 +88,7 @@ pub fn probe() -> serde_json::Value {
     }
     #[cfg(not(any(target_os = "linux", target_os = "macos")))]
     {
-        // Say why, so `aero doctor` and `server_status` report something useful
+        // Say why, so `delta doctor` and `server_status` report something useful
         // instead of a bare false.
         serde_json::json!({
             "supported": false,

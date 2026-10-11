@@ -29,7 +29,7 @@ impl Browser {
             let _ = self
                 .call(
                     "Runtime.releaseObjectGroup",
-                    json!({"objectGroup":"aero-action"}),
+                    json!({"objectGroup":"delta-action"}),
                 )
                 .await;
             Some(
@@ -137,7 +137,7 @@ impl Browser {
             let result = self
                 .call(
                     "Runtime.evaluate",
-                    json!({"expression":script,"objectGroup":"aero-cursor"}),
+                    json!({"expression":script,"objectGroup":"delta-cursor"}),
                 )
                 .await?;
             if let Some(object) = result["result"]["objectId"].as_str() {
@@ -182,7 +182,7 @@ impl Browser {
             let _ = self
                 .call(
                     "Runtime.releaseObjectGroup",
-                    json!({"objectGroup":"aero-cursor"}),
+                    json!({"objectGroup":"delta-cursor"}),
                 )
                 .await;
         }

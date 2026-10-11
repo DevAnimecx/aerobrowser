@@ -369,7 +369,7 @@ fn materialize_bundled() -> Result<PathBuf> {
         bail!("Bundled engine is Linux x86_64 only");
     }
     let home = std::env::var_os("HOME").ok_or_else(|| anyhow!("HOME unset"))?;
-    let dir = PathBuf::from(home).join(".cache/aerobrowser/moli-v1.1.12");
+    let dir = PathBuf::from(home).join(".cache/deltabrowser/moli-v1.1.12");
     let path = dir.join("moli");
     let pin: Value = serde_json::from_str(include_str!("../docs/engine-pin.json"))?;
     if let Ok(bytes) = std::fs::read(&path) {
@@ -400,6 +400,6 @@ pub async fn install_moli() -> Result<Value> {
         .bytes()
         .await?;
     let home = std::env::var_os("HOME").ok_or_else(|| anyhow!("HOME unset"))?;
-    let dir = PathBuf::from(home).join(".aero/engines/moli-v1.1.12");
+    let dir = PathBuf::from(home).join(".delta/engines/moli-v1.1.12");
     extract_moli(&bytes, &dir)
 }

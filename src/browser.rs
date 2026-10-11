@@ -63,7 +63,7 @@ impl Browser {
             .as_ref()
             .map(|e| e.endpoint.as_str())
             .unwrap_or(endpoint);
-        let engine_info=engine.as_ref().map(|e|e.info.clone()).unwrap_or(json!({"engine":"external-cdp","sandbox":"external browser responsibility; no Aero kernel policy"}));
+        let engine_info=engine.as_ref().map(|e|e.info.clone()).unwrap_or(json!({"engine":"external-cdp","sandbox":"external browser responsibility; no Delta kernel policy"}));
         let mut cdp = Cdp::connect(actual).await?;
         let r = cdp
             .call(
@@ -129,7 +129,7 @@ impl Browser {
         self.call("Network.enable", json!({})).await?;
         self.call("Runtime.enable", json!({})).await?;
         let _ = self.call("Performance.enable", json!({})).await;
-        let _ = self.call("Page.addScriptToEvaluateOnNewDocument",json!({"source":"try {globalThis.__aeroLcp=null;new PerformanceObserver(l=>{globalThis.__aeroLcp=l.getEntries().at(-1)?.startTime??null}).observe({type:'largest-contentful-paint',buffered:true})}catch{}"})).await;
+        let _ = self.call("Page.addScriptToEvaluateOnNewDocument",json!({"source":"try {globalThis.__deltaLcp=null;new PerformanceObserver(l=>{globalThis.__deltaLcp=l.getEntries().at(-1)?.startTime??null}).observe({type:'largest-contentful-paint',buffered:true})}catch{}"})).await;
         if url != "about:blank" {
             self.navigate(url).await?;
         }
@@ -191,7 +191,7 @@ impl Browser {
             bail!("Provide ref OR selector, not both");
         }
         let r = if let Some(s) = args["selector"].as_str() {
-            self.call("Runtime.evaluate",json!({"expression":format!("document.querySelector({})",json!(s)),"objectGroup":"aero-action"})).await?
+            self.call("Runtime.evaluate",json!({"expression":format!("document.querySelector({})",json!(s)),"objectGroup":"delta-action"})).await?
         } else {
             let key = string(args, "ref")?.trim_start_matches('@');
             let id = *self
@@ -204,7 +204,7 @@ impl Browser {
             }
             self.call(
                 "DOM.resolveNode",
-                json!({"backendNodeId":id,"objectGroup":"aero-action"}),
+                json!({"backendNodeId":id,"objectGroup":"delta-action"}),
             )
             .await?
         };
@@ -229,7 +229,7 @@ impl Browser {
         let _ = self
             .call(
                 "Runtime.releaseObjectGroup",
-                json!({"objectGroup":"aero-action"}),
+                json!({"objectGroup":"delta-action"}),
             )
             .await;
         let r = result?;

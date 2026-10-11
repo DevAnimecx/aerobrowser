@@ -165,7 +165,7 @@ async fn cli(State(a): State<App>, h: HeaderMap, axum::Json(v): axum::Json<Value
                 return StatusCode::TOO_MANY_REQUESTS.into_response();
             }
             let handle = Handle::new(a.endpoint.clone(), a.timeout);
-            drop(handle.submit(json!({"jsonrpc":"2.0","id":"aero-cli-init","method":"initialize","params":{"protocolVersion":"2025-11-25"}})));
+            drop(handle.submit(json!({"jsonrpc":"2.0","id":"delta-cli-init","method":"initialize","params":{"protocolVersion":"2025-11-25"}})));
             drop(handle.submit(json!({"jsonrpc":"2.0","method":"notifications/initialized"})));
             r.cli.insert(p.id.clone(), handle);
         }
@@ -178,7 +178,7 @@ async fn cli(State(a): State<App>, h: HeaderMap, axum::Json(v): axum::Json<Value
     if r.is_null() {
         return response(
             StatusCode::SERVICE_UNAVAILABLE,
-            json!({"status":"error","error":"session actor unavailable; restart with `aero start`"}),
+            json!({"status":"error","error":"session actor unavailable; restart with `delta start`"}),
         );
     }
     if r["error"].is_object() {
@@ -328,9 +328,9 @@ pub async fn serve(host: &str, port: u16, endpoint: String, token: String) -> an
             });
         }
     });
-    let router=Router::new().route("/health",get(||async{axum::Json(json!({"service":"aerobrowser","status":"alive","version":env!("CARGO_PKG_VERSION"),"browser_readiness":"lazy; not asserted by this endpoint"}))})).route("/whoami",get(status)).route("/mcp",post(post_mcp).delete(delete_mcp)).route("/sse",get(legacy_sse)).route("/messages",post(legacy_message)).route("/cli",post(cli)).route("/admin/shutdown",post(shutdown)).layer(DefaultBodyLimit::max(256*1024)).with_state(a.clone());
+    let router=Router::new().route("/health",get(||async{axum::Json(json!({"service":"deltabrowser","status":"alive","version":env!("CARGO_PKG_VERSION"),"browser_readiness":"lazy; not asserted by this endpoint"}))})).route("/whoami",get(status)).route("/mcp",post(post_mcp).delete(delete_mcp)).route("/sse",get(legacy_sse)).route("/messages",post(legacy_message)).route("/cli",post(cli)).route("/admin/shutdown",post(shutdown)).layer(DefaultBodyLimit::max(256*1024)).with_state(a.clone());
     let listener = tokio::net::TcpListener::bind((host, port)).await?;
-    eprintln!("Aero HTTP listening on {host}:{port}; principal-bound sessions enabled");
+    eprintln!("Delta HTTP listening on {host}:{port}; principal-bound sessions enabled");
     let closing = a.clone();
     let result = axum::serve(listener, router)
         .with_graceful_shutdown(async move {

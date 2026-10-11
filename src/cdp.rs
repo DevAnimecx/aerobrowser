@@ -170,7 +170,7 @@ impl Cdp {
                                             _=>("Fetch.continueRequest",json!({"requestId":p["requestId"]})),
                                         };
                                         if method=="Fetch.fulfillRequest"||method=="Fetch.failRequest" {
-                                            let record=json!({"method":"Aero.interception","sessionId":session,"params":{"requestId":p["networkId"],"requested_action":if method=="Fetch.fulfillRequest"{"mock"}else{"block"},"execution":"requested; inspect response/error for outcome"}});
+                                            let record=json!({"method":"Delta.interception","sessionId":session,"params":{"requestId":p["networkId"],"requested_action":if method=="Fetch.fulfillRequest"{"mock"}else{"block"},"execution":"requested; inspect response/error for outcome"}});
                                             let n=e.network.push(record);e.dropped+=n;
                                         }
                                         automatic+=1;Some(json!({"id":automatic,"method":method,"params":params,"sessionId":session}))

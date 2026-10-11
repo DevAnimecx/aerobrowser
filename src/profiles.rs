@@ -49,7 +49,7 @@ pub fn detect_engine() -> (String, String, bool) {
 
     // Check for installed Moli engine
     if let Some(home) = &home {
-        let moli_path = home.join(".aero/engines/moli-v1.1.12/moli");
+        let moli_path = home.join(".delta/engines/moli-v1.1.12/moli");
         if moli_path.is_file() {
             return ("moli".to_string(), "managed".to_string(), true);
         }
@@ -77,6 +77,178 @@ pub fn detect_engine() -> (String, String, bool) {
     ("moli".to_string(), "managed".to_string(), false)
 }
 
+/// Every agent adapter this build supports.
+pub const AGENTS: &[&str] = &[
+    "opencode",
+    "claude-code",
+    "claude-desktop",
+    "cursor",
+    "vscode",
+    "codex",
+    "windsurf",
+    "cline",
+    "roo-code",
+    "hermes",
+    "generic",
+];
+
+/// Windows markers for an agent that is present but never launched.
+#[cfg(target_os = "windows")]
+fn windows_installed_markers(agent: &str) -> Vec<std::path::PathBuf> {
+    let program_files = std::env::var_os("ProgramFiles").map(std::path::PathBuf::from);
+    let local_app_data = std::env::var_os("LOCALAPPDATA").map(std::path::PathBuf::from);
+    let appdata = std::env::var_os("APPDATA").map(std::path::PathBuf::from);
+    let mut out = Vec::new();
+    let mut push = |base: Option<&std::path::PathBuf>, parts: &[&str]| {
+        if let Some(base) = base {
+            let mut path = base.clone();
+            for part in parts {
+                path = path.join(part);
+            }
+            out.push(path);
+        }
+    };
+    match agent {
+        "claude-desktop" => push(appdata.as_ref(), &["Claude"]),
+        "cursor" => push(local_app_data.as_ref(), &["Programs", "cursor"]),
+        "vscode" => push(program_files.as_ref(), &["Microsoft VS Code"]),
+        "windsurf" => push(local_app_data.as_ref(), &["Programs", "Windsurf"]),
+        _ => {}
+    }
+    out
+}
+
+#[cfg(not(target_os = "windows"))]
+fn windows_installed_markers(_agent: &str) -> Vec<std::path::PathBuf> {
+    Vec::new()
+}
+
+/// macOS markers for an agent that is present but never launched.
+#[cfg(target_os = "macos")]
+fn macos_installed_markers(agent: &str) -> Vec<std::path::PathBuf> {
+    let applications = std::path::PathBuf::from("/Applications");
+    let match_name = match agent {
+        "claude-desktop" => Some("Claude.app"),
+        "cursor" => Some("Cursor.app"),
+        "vscode" => Some("Visual Studio Code.app"),
+        "windsurf" => Some("Windsurf.app"),
+        _ => None,
+    };
+    match_name
+        .map(|name| vec![applications.join(name)])
+        .unwrap_or_default()
+}
+
+#[cfg(not(target_os = "macos"))]
+fn macos_installed_markers(_agent: &str) -> Vec<std::path::PathBuf> {
+    Vec::new()
+}
+
+/// Linux markers for an agent that is present but never launched.
+#[cfg(target_os = "linux")]
+fn linux_installed_markers(agent: &str) -> Vec<std::path::PathBuf> {
+    let names: &[&str] = match agent {
+        "claude-code" => &["claude"],
+        "cursor" => &["cursor"],
+        "vscode" => &["code"],
+        "windsurf" => &["windsurf"],
+        _ => &[],
+    };
+    let mut out = Vec::new();
+    if let Some(paths) = std::env::var_os("PATH") {
+        for dir in std::env::split_paths(&paths) {
+            for name in names {
+                out.push(dir.join(name));
+            }
+        }
+    }
+    out
+}
+
+#[cfg(not(target_os = "linux"))]
+fn linux_installed_markers(_agent: &str) -> Vec<std::path::PathBuf> {
+    Vec::new()
+}
+
+/// Where this build expects an agent's configuration to live.
+pub fn default_config_path(agent: &str) -> std::path::PathBuf {
+    let home = home_dir().unwrap_or_else(|| std::path::PathBuf::from("."));
+    match agent {
+        "opencode" => home.join(".config").join("opencode").join("opencode.json"),
+        "claude-code" => std::path::PathBuf::from(".mcp.json"),
+        // Claude Desktop keeps its config in a platform-specific application
+        // support directory, not the macOS path on every host.
+        "claude-desktop" => {
+            if cfg!(target_os = "macos") {
+                home.join("Library")
+                    .join("Application Support")
+                    .join("Claude")
+                    .join("claude_desktop_config.json")
+            } else if cfg!(target_os = "windows") {
+                let appdata = std::env::var_os("APPDATA")
+                    .map(std::path::PathBuf::from)
+                    .unwrap_or_else(|| home.clone());
+                appdata.join("Claude").join("claude_desktop_config.json")
+            } else {
+                let xdg = std::env::var_os("XDG_CONFIG_HOME")
+                    .map(std::path::PathBuf::from)
+                    .unwrap_or_else(|| home.join(".config"));
+                xdg.join("Claude").join("claude_desktop_config.json")
+            }
+        }
+        "cursor" => home.join(".cursor").join("mcp.json"),
+        "vscode" => home.join(".vscode").join("mcp.json"),
+        "windsurf" => home.join(".codeium").join("windsurf").join("mcp.json"),
+        "cline" => home.join(".cline").join("mcp.json"),
+        "roo-code" => home.join(".roo").join("mcp.json"),
+        "hermes" => home.join(".hermes").join("config.yaml"),
+        "codex" => home.join(".codex").join("config.toml"),
+        "generic" => std::path::PathBuf::from("delta-mcp.json"),
+        _ => std::path::PathBuf::from(format!("{agent}-mcp.json")),
+    }
+}
+
+/// Whether an agent appears to be installed on this machine.
+///
+/// This looks for the agent's application or executable. It does not launch it,
+/// and it is a heuristic: a marker file existing does not prove the client works
+/// with DeltaBrowser.
+pub fn agent_installed(agent: &str) -> bool {
+    let config_present = default_config_path(agent).exists();
+    let markers = {
+        let mut all = windows_installed_markers(agent);
+        all.extend(macos_installed_markers(agent));
+        all.extend(linux_installed_markers(agent));
+        all
+    };
+    markers.iter().any(|m| m.exists()) || config_present
+}
+
+/// Surfaces the agents that appear to be installed, with their config paths.
+pub fn detect_agents() -> Vec<Value> {
+    AGENTS
+        .iter()
+        .map(|agent| {
+            let path = default_config_path(agent);
+            json!({
+                "agent": agent,
+                "installed": agent_installed(agent),
+                "config": path.to_string_lossy(),
+                "configured": path.exists(),
+            })
+        })
+        .collect()
+}
+
+/// Agents that appear to be installed and are not configured yet.
+pub fn unconfigured_agents() -> Vec<&'static str> {
+    AGENTS
+        .iter()
+        .copied()
+        .filter(|agent| agent_installed(agent) && !default_config_path(agent).exists())
+        .collect()
+}
+
 /// Returns a human-readable summary of engine detection.
 pub fn engine_status() -> Value {
     let (engine, endpoint, installed) = detect_engine();
@@ -88,9 +260,9 @@ pub fn engine_status() -> Value {
             format!("Using {} engine at {}", engine, endpoint)
         } else {
             if cfg!(all(target_os = "linux", target_arch = "x86_64")) {
-                format!("{engine} not installed; run `aero engine install moli` or `aero connect <agent> --install`")
+                format!("{engine} not installed; run `delta engine install moli` or `delta connect <agent> --install`")
             } else {
-                format!("{engine} managed engines are Linux x86_64 only; run `aero connect <agent> --install` to adopt a locally installed browser")
+                format!("{engine} managed engines are Linux x86_64 only; run `delta connect <agent> --install` to adopt a locally installed browser")
             }
         }
     })
@@ -128,11 +300,11 @@ pub fn template(agent: &str, exe: &str, engine: &str, endpoint: &str) -> Result<
     let server = server_config(exe, engine, endpoint);
     Ok(match agent {
         "claude-code" | "claude-desktop" | "cursor" | "windsurf" | "cline" | "roo-code" => {
-            json!({"mcpServers":{"aero":server}})
+            json!({"mcpServers":{"delta":server}})
         }
-        "vscode" => json!({"servers":{"aero":{"type":"stdio","command":exe,"args":["mcp"],"env":server["env"]}}}),
-        "opencode" => json!({"mcp":{"aero":{"type":"local","command":[exe,"mcp"],"environment":server["env"],"enabled":true}}}),
-        "hermes" => json!({"mcp_servers":{"aero":{"command":exe,"args":["mcp"],"env":server["env"]}}}),
+        "vscode" => json!({"servers":{"delta":{"type":"stdio","command":exe,"args":["mcp"],"env":server["env"]}}}),
+        "opencode" => json!({"mcp":{"delta":{"type":"local","command":[exe,"mcp"],"environment":server["env"],"enabled":true}}}),
+        "hermes" => json!({"mcp_servers":{"delta":{"command":exe,"args":["mcp"],"env":server["env"]}}}),
         "generic" => server,
         _ => bail!("Supported JSON config adapters: claude-code, claude-desktop, cursor, vscode, opencode, windsurf, cline, roo-code, hermes, generic. Client file location must be supplied explicitly."),
     })
@@ -187,10 +359,10 @@ pub fn install(
         if !doc[group].is_object() {
             bail!("Existing config group is not an object");
         }
-        if doc[group].get("aero").is_some() && !force {
-            bail!("Aero configuration exists; use --force to replace with a backup");
+        if doc[group].get("delta").is_some() && !force {
+            bail!("Delta configuration exists; use --force to replace with a backup");
         }
-        doc[group]["aero"] = value["aero"].clone();
+        doc[group]["delta"] = value["delta"].clone();
     }
 
     if let Some(parent) = path.parent() {
@@ -216,7 +388,7 @@ pub fn install(
     )?;
     std::fs::rename(temp, path)?;
 
-    let skill = path.with_extension("aero-skill.md");
+    let skill = path.with_extension("delta-skill.md");
     std::fs::write(&skill, include_str!("../docs/AGENT-SKILL.md"))?;
 
     Ok(json!({
@@ -350,7 +522,7 @@ pub async fn connect(
     } else if !installed && detected == "moli" {
         bail!(
             "No browser engine is available.\n\
-             Run `aero connect {} --install` to install a managed engine on Linux x86_64 or adopt a locally installed browser, or start an existing browser with --remote-debugging-port=9222.",
+             Run `delta connect {} --install` to install a managed engine on Linux x86_64 or adopt a locally installed browser, or start an existing browser with --remote-debugging-port=9222.",
             agent
         );
     }
@@ -364,11 +536,11 @@ pub async fn connect(
         "config": result["config"],
         "skill": result["skill"],
         "next_steps": if engine == "external" {
-            "Start your browser with --remote-debugging-port=9222, or run: aero start"
+            "Start your browser with --remote-debugging-port=9222, or run: delta start"
         } else if engine == "moli" {
             "The managed Moli engine will auto-launch when you first use a browser tool. No external browser needed."
         } else {
-            "Start the Aero HTTP daemon: aero start"
+            "Start the Delta HTTP daemon: delta start"
         }
     });
 
@@ -414,8 +586,8 @@ fn install_codex(
         .as_table_mut()
         .ok_or_else(|| anyhow::anyhow!("mcp_servers must be a TOML table"))?;
 
-    if servers.contains_key("aero") && !force {
-        bail!("Aero configuration exists; use --force for backed-up replacement");
+    if servers.contains_key("delta") && !force {
+        bail!("Delta configuration exists; use --force for backed-up replacement");
     }
 
     let mut table = Table::new();
@@ -436,7 +608,7 @@ fn install_codex(
     }
     table["env"] = Item::Table(env);
 
-    servers["aero"] = Item::Table(table);
+    servers["delta"] = Item::Table(table);
 
     if let Some(parent) = path.parent() {
         if !parent.as_os_str().is_empty() {
@@ -456,7 +628,7 @@ fn install_codex(
     std::fs::write(&temp, doc.to_string())?;
     std::fs::rename(temp, path)?;
 
-    let skill = path.with_extension("aero-skill.md");
+    let skill = path.with_extension("delta-skill.md");
     std::fs::write(&skill, include_str!("../docs/AGENT-SKILL.md"))?;
 
     Ok(json!({
@@ -474,26 +646,26 @@ mod tests {
     #[test]
     fn formats() {
         assert!(
-            template("vscode", "aero", "moli", "managed").unwrap()["servers"]["aero"].is_object()
+            template("vscode", "delta", "moli", "managed").unwrap()["servers"]["delta"].is_object()
         );
         assert!(
-            template("opencode", "aero", "external", "http://localhost:9222").unwrap()["mcp"]
-                ["aero"]["command"]
+            template("opencode", "delta", "external", "http://localhost:9222").unwrap()["mcp"]
+                ["delta"]["command"]
                 .is_array()
         );
-        assert!(template("unknown", "aero", "moli", "managed").is_err());
+        assert!(template("unknown", "delta", "moli", "managed").is_err());
     }
 
     #[test]
     fn managed_engine_has_no_cdp_env() {
-        let v = server_config("aero", "moli", "managed");
+        let v = server_config("delta", "moli", "managed");
         assert_eq!(v["env"]["AERO_ENGINE"], json!("moli"));
         assert!(v["env"]["AERO_CDP"].is_null());
     }
 
     #[test]
     fn external_engine_has_cdp_env() {
-        let v = server_config("aero", "external", "http://127.0.0.1:9222");
+        let v = server_config("delta", "external", "http://127.0.0.1:9222");
         assert_eq!(v["env"]["AERO_ENGINE"], json!("external"));
         assert_eq!(v["env"]["AERO_CDP"], json!("http://127.0.0.1:9222"));
     }
@@ -505,15 +677,53 @@ mod tests {
     }
 
     #[test]
+    fn every_adapted_agent_has_a_distinct_config_path() {
+        // Two agents sharing a path would mean one overwrites the other's config.
+        let mut seen = std::collections::HashSet::new();
+        for agent in AGENTS {
+            let path = default_config_path(agent);
+            assert!(
+                seen.insert(path.clone()),
+                "{agent} collides on {}",
+                path.display()
+            );
+        }
+        assert_eq!(seen.len(), AGENTS.len());
+    }
+
+    #[test]
+    fn unknown_agents_still_get_a_usable_path() {
+        let path = default_config_path("some-future-agent");
+        assert!(path.to_string_lossy().contains("some-future-agent"));
+    }
+
+    #[test]
+    fn detection_reports_every_agent_with_both_states() {
+        let detected = detect_agents();
+        assert_eq!(detected.len(), AGENTS.len());
+        for agent in &detected {
+            assert!(agent["agent"].is_string());
+            assert!(agent["installed"].is_boolean());
+            assert!(agent["configured"].is_boolean());
+            assert!(agent["config"].is_string());
+        }
+        // Nothing reported as configured should be absent from the pending list.
+        for pending in unconfigured_agents() {
+            assert!(!default_config_path(pending).exists());
+            assert!(agent_installed(pending));
+        }
+    }
+
+    #[test]
     fn home_dir_reports_the_source_variable() {
         let previous_home = std::env::var_os("HOME");
         let previous_profile = std::env::var_os("USERPROFILE");
 
-        std::env::set_var("HOME", "/tmp/aero-primary");
+        std::env::set_var("HOME", "/tmp/delta-primary");
         std::env::set_var("USERPROFILE", r"C:\Users\should-not-win");
         assert_eq!(
             home_dir().map(|p| p.to_string_lossy().to_string()),
-            Some("/tmp/aero-primary".to_owned()),
+            Some("/tmp/delta-primary".to_owned()),
             "HOME must take precedence over USERPROFILE"
         );
 
@@ -533,10 +743,10 @@ mod tests {
         let previous_home = std::env::var_os("HOME");
         let previous_profile = std::env::var_os("USERPROFILE");
 
-        std::env::set_var("HOME", "/tmp/aero-home");
+        std::env::set_var("HOME", "/tmp/delta-home");
         assert_eq!(
             home_dir().map(|p| p.to_string_lossy().to_string()),
-            Some("/tmp/aero-home".to_owned())
+            Some("/tmp/delta-home".to_owned())
         );
 
         std::env::remove_var("HOME");

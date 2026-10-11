@@ -49,7 +49,7 @@ pub fn export(events: Vec<Value>, dropped: u64) -> Value {
                                 h.data = Some(h.data.unwrap_or(0).saturating_add(n));
                             }
                         }
-                        "Aero.interception" => h.interception = p.clone(),
+                        "Delta.interception" => h.interception = p.clone(),
                         _ => {}
                     }
                 }
@@ -106,7 +106,7 @@ pub fn export(events: Vec<Value>, dropped: u64) -> Value {
             .unwrap_or(json!(""));
         entries.push(json!({"startedDateTime":utc(wall),"time":(end-start)*1000.,"request":{"method":req["method"],"url":req["url"],"httpVersion":resp["protocol"].as_str().unwrap_or(""),"headers":headers(&req["headers"]),"cookies":[],"queryString":query,"headersSize":-1,"bodySize":-1},"response":{"status":resp["status"].as_u64().unwrap_or(0),"statusText":resp["statusText"].as_str().unwrap_or(""),"httpVersion":resp["protocol"].as_str().unwrap_or(""),"headers":headers(&resp["headers"]),"cookies":[],"content":{"size":h.data.map(|n|n as i64).unwrap_or(-1),"mimeType":resp["mimeType"].as_str().unwrap_or("")},"redirectURL":redirect,"headersSize":-1,"bodySize":-1},"cache":{},"timings":{"blocked":-1,"dns":diff("dnsStart","dnsEnd"),"connect":diff("connectStart","connectEnd"),"ssl":diff("sslStart","sslEnd"),"send":diff("sendStart","sendEnd"),"wait":diff("sendEnd","receiveHeadersEnd"),"receive":receive},"_requestId":p["requestId"],"_source":"CDP Network events","_completion":h.completion,"_encodedTransferBytes":transfer,"_error":h.finish["errorText"],"_interception":h.interception,"_fromDiskCache":resp["fromDiskCache"],"_fromServiceWorker":resp["fromServiceWorker"],"_timingNotes":"Unknown timings are -1, never estimated; wait ends at receiveHeadersEnd; receive is measured from headers end to loadingFinished; status 0 means no observed response"}));
     }
-    json!({"log":{"version":"1.2","creator":{"name":"AeroBrowser","version":env!("CARGO_PKG_VERSION")},"entries":entries,"_incompleteRequestsOmitted":incomplete,"_droppedCaptureEvents":dropped,"comment":"Observed CDP data only; redirect hops preserved. Bodies/cookies omitted; sensitive headers redacted. URLs and query parameters are NOT redacted. Unknown sizes/timings are -1. Decoded content size uses observed dataReceived only; encoded transfer bytes are separate (not misreported as body size). Bounded capture can omit events."}})
+    json!({"log":{"version":"1.2","creator":{"name":"DeltaBrowser","version":env!("CARGO_PKG_VERSION")},"entries":entries,"_incompleteRequestsOmitted":incomplete,"_droppedCaptureEvents":dropped,"comment":"Observed CDP data only; redirect hops preserved. Bodies/cookies omitted; sensitive headers redacted. URLs and query parameters are NOT redacted. Unknown sizes/timings are -1. Decoded content size uses observed dataReceived only; encoded transfer bytes are separate (not misreported as body size). Bounded capture can omit events."}})
 }
 fn headers(v: &Value) -> Vec<Value> {
     v.as_object().map(|m|m.iter().map(|(k,val)|json!({"name":k,"value":if ["authorization","cookie","set-cookie","proxy-authorization","x-api-key"].contains(&k.to_ascii_lowercase().as_str()){"[REDACTED]".into()}else{val.as_str().unwrap_or("").to_owned()}})).collect()).unwrap_or_default()

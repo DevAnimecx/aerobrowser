@@ -10,7 +10,7 @@ impl Browser {
                 let path=crate::artifacts::Artifacts::upload(string(&a,"path")?)?;
                 let object=self.element(&a).await?;
                 let result=self.call("DOM.setFileInputFiles",json!({"objectId":object,"files":[path]})).await;
-                let _=self.call("Runtime.releaseObjectGroup",json!({"objectGroup":"aero-action"})).await;result
+                let _=self.call("Runtime.releaseObjectGroup",json!({"objectGroup":"delta-action"})).await;result
             }
             "drag"=>{
                 let from=if let Some(r)=a["from_ref"].as_str(){json!({"ref":r})}else{json!({"selector":string(&a,"from_selector")?})};
@@ -36,7 +36,7 @@ impl Browser {
                 let snapshot=self.run("snapshot",json!({"interactive_only":true})).await?;
                 let mut elements=Vec::new();
                 for e in snapshot["elements"].as_array().unwrap(){let r=self.on_element(&json!({"ref":e["ref"]}),"function(){const r=this.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height}}",vec![]).await;if let Ok(r)=r{elements.push(json!({"ref":e["ref"],"label":e["name"],"rect":r}));}}
-                let overlay=format!("(()=>{{const root=document.createElement('div');root.id='__aero_annotation_{}';root.style='position:fixed;inset:0;pointer-events:none;z-index:2147483647';for(const e of {}){{const n=document.createElement('div');const r=e.rect;n.textContent=e.ref;n.style=`position:absolute;left:${{r.x}}px;top:${{r.y}}px;width:${{r.width}}px;height:${{r.height}}px;border:2px solid #f43f5e;color:white;font:12px monospace;background:#f43f5e22;box-sizing:border-box`;const label=document.createElement('span');label.textContent=e.ref;label.style='background:#be123c;color:#fff';n.textContent='';n.append(label);root.append(n);}}document.documentElement.append(root);return root.id}})()",uuid::Uuid::new_v4().simple(),json!(elements));
+                let overlay=format!("(()=>{{const root=document.createElement('div');root.id='__delta_annotation_{}';root.style='position:fixed;inset:0;pointer-events:none;z-index:2147483647';for(const e of {}){{const n=document.createElement('div');const r=e.rect;n.textContent=e.ref;n.style=`position:absolute;left:${{r.x}}px;top:${{r.y}}px;width:${{r.width}}px;height:${{r.height}}px;border:2px solid #f43f5e;color:white;font:12px monospace;background:#f43f5e22;box-sizing:border-box`;const label=document.createElement('span');label.textContent=e.ref;label.style='background:#be123c;color:#fff';n.textContent='';n.append(label);root.append(n);}}document.documentElement.append(root);return root.id}})()",uuid::Uuid::new_v4().simple(),json!(elements));
                 let id=self.eval(&overlay).await?;let capture=self.run("screenshot",json!({})).await;
                 let _=self.eval(&format!("document.getElementById({})?.remove()",id)).await;
                 let mut image=capture?;image["elements"]=json!(elements);
@@ -73,7 +73,7 @@ impl Browser {
                 let har=crate::har::export(events,dropped);
                 let path=self.artifacts.write(a["path"].as_str().unwrap_or("network.har"),&serde_json::to_vec_pretty(&har)?)?;Ok(json!({"path":path,"har":har}))
             }
-            "get_performance"=>self.eval("(()=>{const n=performance.getEntriesByType('navigation')[0];const f=performance.getEntriesByName('first-contentful-paint')[0];return {fcp:f?.startTime??null,lcp:globalThis.__aeroLcp??null,tti:null,dom_ready:n?.domContentLoadedEventEnd??null,load:n?.loadEventEnd??null,time_origin:performance.timeOrigin,notes:'milliseconds relative to time origin; unavailable metrics are null; no TTI heuristic'}})()").await,
+            "get_performance"=>self.eval("(()=>{const n=performance.getEntriesByType('navigation')[0];const f=performance.getEntriesByName('first-contentful-paint')[0];return {fcp:f?.startTime??null,lcp:globalThis.__deltaLcp??null,tti:null,dom_ready:n?.domContentLoadedEventEnd??null,load:n?.loadEventEnd??null,time_origin:performance.timeOrigin,notes:'milliseconds relative to time origin; unavailable metrics are null; no TTI heuristic'}})()").await,
             "get_memory_usage"=>{
                 let h=self.call("Runtime.getHeapUsage",json!({})).await;
                 let d=self.call("Memory.getDOMCounters",json!({})).await;

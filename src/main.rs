@@ -22,10 +22,10 @@ use serde_json::{json, Value};
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt};
 #[derive(Parser)]
 #[command(
-    name = "aero",
+    name = "delta",
     version,
-    about = "AeroBrowser v0.5 — The agent's personal browser by Blackvault Technology (Adarsh Kushwah).",
-    long_about = "AeroBrowser: a browser for AI agents.\n\nConnects your agent to a real browser with 62 MCP tools: batched tool calls, delta\nsnapshots, persistent sessions, and a kernel-enforced sandbox on Linux x86_64.\n\nInstall:\n  curl -fsSL https://raw.githubusercontent.com/DevAnimecx/aerobrowser/master/scripts/install.sh | sh\n  irm https://raw.githubusercontent.com/DevAnimecx/aerobrowser/master/scripts/install.ps1 | iex; Install-AeroBrowser\n\nThen run `aero doctor` to verify the install, and `aero connect <agent>` to configure one."
+    about = "DeltaBrowser v0.5 — The agent's personal browser by Blackvault Technology (Adarsh Kushwah).",
+    long_about = "DeltaBrowser: a browser for AI agents.\n\nConnects your agent to a real browser with 62 MCP tools: batched tool calls, delta\nsnapshots, persistent sessions, and a kernel-enforced sandbox on Linux x86_64.\n\nInstall:\n  curl -fsSL https://raw.githubusercontent.com/DevAnimecx/deltabrowser/master/scripts/install.sh | sh\n  irm https://raw.githubusercontent.com/DevAnimecx/deltabrowser/master/scripts/install.ps1 | iex; Install-DeltaBrowser\n\nThen run `delta doctor` to verify the install, and `delta connect <agent>` to configure one."
 )]
 struct Cli {
     #[arg(
@@ -85,6 +85,7 @@ enum Command {
         action: ProfileCommand,
     },
     Connect {
+        /// Agent name, or "all" to configure every detected agent
         agent: String,
         #[arg(long, env = "AERO_CONFIG_PATH")]
         path: Option<std::path::PathBuf>,
@@ -94,6 +95,15 @@ enum Command {
         force: bool,
         #[arg(long, default_value = "8931")]
         port: u16,
+    },
+    /// Find agents installed on this machine and report their config paths
+    Agents {
+        /// Print the MCP server block to paste into a client with no adapter
+        #[arg(long)]
+        config: bool,
+        /// Print machine-readable output
+        #[arg(long)]
+        json: bool,
     },
     Sandbox {
         #[command(subcommand)]
@@ -212,7 +222,7 @@ fn endpoint(c: &Cli) -> Result<String> {
             .ok_or_else(|| {
                 anyhow::anyhow!("Could not determine home directory; set HOME or --engine-path")
             })?
-            .join(".aero/engines/moli-v1.1.12/moli")
+            .join(".delta/engines/moli-v1.1.12/moli")
     } else {
         bail!("--engine-path is required for {}", c.engine)
     };
@@ -334,7 +344,7 @@ fn cli_action(words: &[String]) -> Result<(String, Value)> {
             ),
             _ => bail!("cookies: get, clear or set NAME VALUE URL"),
         },
-        _ => bail!("Unknown command {first}; use aero tools or aero call TOOL JSON"),
+        _ => bail!("Unknown command {first}; use delta tools or delta call TOOL JSON"),
     };
     Ok((name.to_owned(), args))
 }
@@ -578,10 +588,10 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em}
 <html lang="en">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AeroBrowser Test Report</title>
+<title>DeltaBrowser Test Report</title>
 <style>{style}</style>
 <main>
-<div class="brand">AEROBROWSER / VERIFICATION</div>
+<div class="brand">DELTABROWSER / VERIFICATION</div>
 <h1>Test report</h1>
 <p class="lede">Real browser actions were executed. Arguments are deliberately omitted from step logs so this file is safe to share.</p>
 <div class="verdict {verdict}">{verdict_text}</div>
@@ -597,7 +607,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em}
 <tbody>{rows}</tbody>
 </table>
 <details class="raw"><summary>Structured results</summary><pre>{raw}</pre></details>
-<footer>AeroBrowser {version} &middot; This report records observed results, not a security certification.</footer>
+<footer>DeltaBrowser {version} &middot; This report records observed results, not a security certification.</footer>
 </main>
 </html>"#,
         style = style,
@@ -618,37 +628,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em}
     )
 }
 fn default_agent_config_path(agent: &str) -> std::path::PathBuf {
-    let home = profiles::home_dir().unwrap_or_else(|| std::path::PathBuf::from("."));
-    match agent {
-        "opencode" => home.join(".config/opencode/opencode.json"),
-        "claude-code" => std::path::PathBuf::from(".mcp.json"),
-        // Claude Desktop stores its config in a platform-specific application
-        // support directory, not the macOS path on every host.
-        "claude-desktop" => {
-            if cfg!(target_os = "macos") {
-                home.join("Library/Application Support/Claude/claude_desktop_config.json")
-            } else if cfg!(target_os = "windows") {
-                let appdata = std::env::var_os("APPDATA")
-                    .map(std::path::PathBuf::from)
-                    .unwrap_or_else(|| home.clone());
-                appdata.join("Claude/claude_desktop_config.json")
-            } else {
-                let xdg = std::env::var_os("XDG_CONFIG_HOME")
-                    .map(std::path::PathBuf::from)
-                    .unwrap_or_else(|| home.join(".config"));
-                xdg.join("Claude/claude_desktop_config.json")
-            }
-        }
-        "cursor" => home.join(".cursor/mcp.json"),
-        "vscode" => home.join(".vscode/mcp.json"),
-        "windsurf" => home.join(".codeium/windsurf/mcp.json"),
-        "cline" => home.join(".cline/mcp.json"),
-        "roo-code" => home.join(".roo/mcp.json"),
-        "hermes" => home.join(".hermes/config.yaml"),
-        "codex" => home.join(".codex/config.toml"),
-        "generic" => std::path::PathBuf::from("aero-mcp.json"),
-        _ => std::path::PathBuf::from(format!("{}-mcp.json", agent)),
-    }
+    profiles::default_config_path(agent)
 }
 
 async fn is_daemon_running(server: &str) -> bool {
@@ -699,8 +679,8 @@ fn generate_or_load_token() -> Result<String> {
         .map(std::path::PathBuf::from)
         .unwrap_or_else(|| {
             profiles::home_dir()
-                .map(|h| h.join(".aero/token.json"))
-                .unwrap_or_else(|| std::path::PathBuf::from(".aero-token.json"))
+                .map(|h| h.join(".delta/token.json"))
+                .unwrap_or_else(|| std::path::PathBuf::from(".delta-token.json"))
         });
     load_or_create_token(&token_path)
 }
@@ -762,7 +742,7 @@ fn parse_server_addr(server: &str) -> (String, u16) {
     (host.to_string(), port)
 }
 
-/// Collects every diagnostic check `aero doctor` reports.
+/// Collects every diagnostic check `delta doctor` reports.
 async fn doctor(c: &Cli) -> Value {
     let mut checks: Vec<Value> = Vec::new();
     let mut push = |name: &str, ok: bool, detail: String, fix: Option<&str>| {
@@ -774,7 +754,7 @@ async fn doctor(c: &Cli) -> Value {
         "build",
         true,
         format!(
-            "aero {} on {}",
+            "delta {} on {}",
             env!("CARGO_PKG_VERSION"),
             std::env::consts::OS
         ),
@@ -802,9 +782,9 @@ async fn doctor(c: &Cli) -> Value {
         if installed {
             None
         } else if cfg!(all(target_os = "linux", target_arch = "x86_64")) {
-            Some("Run `aero engine install moli`, or `aero connect <agent> --install`")
+            Some("Run `delta engine install moli`, or `delta connect <agent> --install`")
         } else {
-            Some("Start a Chromium-family browser with --remote-debugging-port=9222, then run `aero connect <agent> --install`")
+            Some("Start a Chromium-family browser with --remote-debugging-port=9222, then run `delta connect <agent> --install`")
         },
     );
     match profiles::find_local_browser() {
@@ -864,7 +844,7 @@ async fn doctor(c: &Cli) -> Value {
             if reachable {
                 None
             } else if label == "daemon_port" {
-                Some("Start the daemon with `aero start`")
+                Some("Start the daemon with `delta start`")
             } else {
                 Some("Launch your browser with --remote-debugging-port=9222, or use a managed engine")
             },
@@ -877,8 +857,8 @@ async fn doctor(c: &Cli) -> Value {
         .map(std::path::PathBuf::from)
         .unwrap_or_else(|| {
             profiles::home_dir()
-                .map(|h| h.join(".aero/token.json"))
-                .unwrap_or_else(|| std::path::PathBuf::from(".aero-token.json"))
+                .map(|h| h.join(".delta/token.json"))
+                .unwrap_or_else(|| std::path::PathBuf::from(".delta-token.json"))
         });
     if let Some(explicit) = c.token.as_ref() {
         push(
@@ -918,7 +898,7 @@ async fn doctor(c: &Cli) -> Value {
             "auth_token",
             false,
             format!("no token file at {}", token_path.display()),
-            Some("One is generated automatically by `aero connect <agent>`"),
+            Some("One is generated automatically by `delta connect <agent>`"),
         );
     }
 
@@ -936,37 +916,13 @@ async fn doctor(c: &Cli) -> Value {
             None
         } else {
             Some(
-                "Only needed for `aero start` and shared sessions; stdio clients do not require it",
+                "Only needed for `delta start` and shared sessions; stdio clients do not require it",
             )
         },
     );
 
-    // Agent config paths
-    let agents = [
-        "opencode",
-        "claude-code",
-        "claude-desktop",
-        "cursor",
-        "vscode",
-        "windsurf",
-        "cline",
-        "roo-code",
-        "hermes",
-        "codex",
-    ];
-    let configs: Vec<Value> = agents
-        .iter()
-        .map(|agent| {
-            let path = default_agent_config_path(agent);
-            let parent = path.parent().unwrap_or(&path);
-            json!({
-                "agent": agent,
-                "path": path.to_string_lossy(),
-                "configured": path.exists(),
-                "parent_exists": parent.exists(),
-            })
-        })
-        .collect();
+    // Agent detection and config paths
+    let configs = profiles::detect_agents();
 
     let failures = checks.iter().filter(|c| c["ok"] != true).count();
     json!({
@@ -974,12 +930,13 @@ async fn doctor(c: &Cli) -> Value {
         "failures": failures,
         "checks": checks,
         "agent_configs": configs,
+        "agents_installed": profiles::unconfigured_agents(),
         "tool_count": schema::tools().len(),
         "sandbox_profiles": profiles::list(),
     })
 }
 
-/// Renders `aero doctor` output for a terminal.
+/// Renders `delta doctor` output for a terminal.
 fn render_doctor(report: &Value) -> String {
     let status = if report["failures"] == 0 {
         "all clear"
@@ -988,7 +945,7 @@ fn render_doctor(report: &Value) -> String {
     };
     let mut out = String::new();
     out.push_str(&format!(
-        "\n  AeroBrowser {} — environment report: {}\n\n",
+        "\n  DeltaBrowser {} — environment report: {}\n\n",
         env!("CARGO_PKG_VERSION"),
         status
     ));
@@ -1017,7 +974,7 @@ fn render_doctor(report: &Value) -> String {
             }
         }
     }
-    let configured = report["agent_configs"]
+    let detected = report["agent_configs"]
         .as_array()
         .map(|c| {
             c.iter()
@@ -1026,18 +983,92 @@ fn render_doctor(report: &Value) -> String {
                 .collect::<Vec<_>>()
         })
         .unwrap_or_default();
+    let installed = report["agent_configs"]
+        .as_array()
+        .map(|c| {
+            c.iter()
+                .filter(|v| v["detected"] == true && v["configured"] != true)
+                .map(|v| v["agent"].as_str().unwrap_or("").to_owned())
+                .collect::<Vec<_>>()
+        })
+        .unwrap_or_default();
     out.push_str(&format!(
-        "\n  Agent configs found: {}\n  Tools available: {}\n\n",
-        if configured.is_empty() {
-            "none — run `aero connect opencode`".to_owned()
+        "\n  Configured agents: {}\n",
+        if detected.is_empty() {
+            "none".to_owned()
         } else {
-            configured.join(", ")
-        },
-        report["tool_count"]
+            detected.join(", ")
+        }
     ));
+    if !installed.is_empty() {
+        out.push_str(&format!(
+            "  Installed but not configured: {}\n",
+            installed.join(", ")
+        ));
+        out.push_str("    run `delta connect all --install` to configure every one\n");
+    } else if detected.is_empty() {
+        out.push_str("  Run `delta agents` to see what is installed, then `delta connect <name>`\n");
+    }
+    out.push_str(&format!("  Tools available: {}\n\n", report["tool_count"]));
     if report["failures"] != 0 {
         out.push_str("  Re-run with `--json` for machine-readable output.\n\n");
     }
+    out
+}
+
+/// Renders `delta agents` output for a terminal.
+fn render_agents(engine: &str, agents: &[Value]) -> String {
+    let mut out = String::new();
+    out.push_str(&format!(
+        "\n  DeltaBrowser agents — engine: {}\n\n",
+        if engine == "external" {
+            "external browser (no kernel sandbox)"
+        } else {
+            "managed"
+        }
+    ));
+    let name_width = agents
+        .iter()
+        .filter_map(|a| a["agent"].as_str())
+        .map(str::len)
+        .max()
+        .unwrap_or(10)
+        .max(10);
+    let mut installed = Vec::new();
+    for agent in agents {
+        let name = agent["agent"].as_str().unwrap_or("");
+        let is_installed = agent["installed"] == true;
+        let is_configured = agent["configured"] == true;
+        let state = if is_configured {
+            "configured"
+        } else if is_installed {
+            installed.push(name.to_owned());
+            "detected"
+        } else {
+            "-"
+        };
+        out.push_str(&format!(
+            "  {name:<name_width$}  {state:<11}  {}\n",
+            agent["config"].as_str().unwrap_or(""),
+            name_width = name_width
+        ));
+    }
+    out.push('\n');
+    if installed.is_empty() {
+        out.push_str("  No installed agent is waiting to be configured.\n");
+        out.push_str("  To set up one anyway:  delta connect opencode --install\n");
+    } else {
+        out.push_str("  Configure everything detected with:\n\n");
+        out.push_str("    delta connect all --install\n\n");
+        out.push_str("  Or one at a time:\n\n");
+        for name in &installed {
+            out.push_str(&format!("    delta connect {name} --install\n"));
+        }
+        out.push('\n');
+    }
+    out.push_str(
+        "  Any other MCP client works too; `delta agents --config` prints the block to paste.\n\n",
+    );
     out
 }
 
@@ -1050,6 +1081,24 @@ async fn run() -> Result<()> {
                 report
             } else {
                 print!("{}", render_doctor(&report));
+                return Ok(());
+            }
+        }
+        Command::Agents {
+            config: show_config,
+            json: as_json,
+        } => {
+            let (engine, detected_endpoint, _) = profiles::detect_engine();
+            let agents = profiles::detect_agents();
+            if *show_config {
+                let exe = std::env::current_exe()?.to_string_lossy().into_owned();
+                profiles::template("generic", &exe, &engine, &detected_endpoint)?;
+                return Ok(());
+            }
+            if *as_json {
+                json!({"engine": engine, "endpoint": detected_endpoint, "agents": agents})
+            } else {
+                print!("{}", render_agents(&engine, &agents));
                 return Ok(());
             }
         }
@@ -1160,7 +1209,66 @@ async fn run() -> Result<()> {
         Command::Tools => json!({"tools":schema::tools()}),
         Command::Config => {
             let (engine, ep, _) = profiles::detect_engine();
-            json!({"mcpServers":{"aero":{"command":"aero","args":["mcp"],"env":profiles::server_config_env(&engine, &ep)?}}})
+            json!({"mcpServers":{"delta":{"command":"delta","args":["mcp"],"env":profiles::server_config_env(&engine, &ep)?}}})
+        }
+        Command::Connect {
+            agent,
+            path,
+            install,
+            force,
+            port: _,
+        } if agent == "all" => {
+            // Configure every agent already installed on this machine. Agents that
+            // are not present are skipped rather than having config written for a
+            // client the user does not have.
+            let targets = profiles::unconfigured_agents();
+            if targets.is_empty() {
+                json!({
+                    "status": "nothing_to_do",
+                    "reason": "No installed agent has an DeltaBrowser config yet.",
+                    "hint": "Run `delta agents` to see what was detected, or `delta agents --config` for a pasteable block.",
+                    "agents": profiles::detect_agents(),
+                })
+            } else {
+                let mut configured = Vec::new();
+                let mut failed = Vec::new();
+                let mut first_engine = String::new();
+                for name in &targets {
+                    let target = default_agent_config_path(name);
+                    match profiles::connect(name, &target, *install, *force).await {
+                        Ok(result) => {
+                            let engine = result["engine"].as_str().unwrap_or("").to_owned();
+                            if first_engine.is_empty() {
+                                first_engine = engine.clone();
+                            }
+                            let mut entry = result;
+                            entry["agent"] = json!(name);
+                            configured.push(entry);
+                        }
+                        Err(e) => {
+                            failed.push(json!({"agent": name, "error": e.to_string()}));
+                        }
+                    }
+                }
+                // A managed engine needs the daemon running before any client can
+                // use it; a failing daemon must not be reported as a successful setup.
+                if first_engine != "external" && !failed.is_empty() {
+                    bail!("Some agents could not be configured; see the errors above.");
+                }
+                if first_engine != "external" && !is_daemon_running(&c.server).await {
+                    eprintln!("Starting Delta HTTP daemon on {}...", c.server);
+                    let token = generate_or_load_token()?;
+                    spawn_daemon(&c.server, &token, endpoint(&c)?).await?;
+                }
+                json!({
+                    "status": if failed.is_empty() { "ok" } else { "partial" },
+                    "configured": configured,
+                    "failed": failed,
+                    "skipped": profiles::detect_agents(),
+                    "engine_status": profiles::engine_status(),
+                    "next_steps": "Restart each agent so it reloads its MCP configuration.",
+                })
+            }
         }
         Command::Connect {
             agent,
@@ -1175,7 +1283,7 @@ async fn run() -> Result<()> {
             let result = profiles::connect(agent, &path, *install, *force).await?;
             let engine = result["engine"].as_str().unwrap_or("");
             if engine != "external" && !is_daemon_running(&c.server).await {
-                eprintln!("Starting Aero HTTP daemon on {}...", c.server);
+                eprintln!("Starting Delta HTTP daemon on {}...", c.server);
                 let token = generate_or_load_token()?;
                 spawn_daemon(&c.server, &token, endpoint(&c)?).await?;
                 eprintln!("Daemon started.");
@@ -1323,12 +1431,15 @@ mod tests {
     #[test]
     fn doctor_report_is_wellformed() {
         let runtime = tokio::runtime::Runtime::new().unwrap();
-        let cli = Cli::try_parse_from(["aero", "doctor"]).unwrap();
+        let cli = Cli::try_parse_from(["delta", "doctor"]).unwrap();
         let report = runtime.block_on(doctor(&cli));
 
         assert_eq!(report["tool_count"], schema::tools().len());
         assert!(report["checks"].as_array().unwrap().len() >= 8);
-        assert!(report["agent_configs"].as_array().unwrap().len() == 10);
+        assert_eq!(
+            report["agent_configs"].as_array().unwrap().len(),
+            profiles::AGENTS.len()
+        );
         // Every check carries a name and an explicit boolean verdict so the
         // report never renders an ambiguous state.
         for check in report["checks"].as_array().unwrap() {
@@ -1349,6 +1460,53 @@ mod tests {
     }
 
     #[test]
+    fn agents_output_lists_every_adapter_and_names_the_next_step() {
+        let agents: Vec<Value> = crate::profiles::AGENTS
+            .iter()
+            .map(|name| {
+                json!({
+                    "agent": name,
+                    "installed": name == &"cursor",
+                    "configured": name == &"opencode",
+                    "config": format!("/tmp/{name}.json"),
+                })
+            })
+            .collect();
+        let rendered = render_agents("external", &agents);
+
+        for name in crate::profiles::AGENTS {
+            assert!(rendered.contains(name), "{name} missing from `delta agents`");
+        }
+        assert!(rendered.contains("configured"));
+        assert!(rendered.contains("detected"));
+        assert!(
+            rendered.contains("delta connect cursor --install"),
+            "a detected-but-unconfigured agent must get a copy-pasteable command"
+        );
+        assert!(
+            rendered.contains("no kernel sandbox"),
+            "external engine must say so"
+        );
+        assert!(!rendered.chars().any(|c| c == '\u{fffd}'));
+    }
+
+    #[test]
+    fn agents_output_offers_setup_when_nothing_is_detected() {
+        let agents: Vec<Value> = crate::profiles::AGENTS
+            .iter()
+            .map(|name| json!({"agent": name, "installed": false, "configured": false, "config": "/tmp/x"}))
+            .collect();
+        let rendered = render_agents("moli", &agents);
+        assert!(rendered.contains("No installed agent is waiting"));
+        assert!(rendered.contains("delta connect opencode --install"));
+        assert!(
+            !rendered.contains("delta connect all"),
+            "no agents to batch means no all-command"
+        );
+        assert!(!rendered.contains("no kernel sandbox"));
+    }
+
+    #[test]
     fn doctor_human_output_is_ascii_safe() {
         let report = json!({
             "failures": 1,
@@ -1363,7 +1521,8 @@ mod tests {
         assert!(rendered.contains("[FAIL]"));
         assert!(rendered.contains("[ok  ]"));
         assert!(rendered.contains("-> Start it"));
-        assert!(rendered.contains("Agent configs found: opencode"));
+        assert!(rendered.contains("Configured agents: opencode"));
+        assert!(rendered.contains("Tools available"));
         assert!(
             !rendered.chars().any(|c| c == '\u{fffd}'),
             "doctor output must be ASCII-safe for any console code page"
@@ -1371,9 +1530,31 @@ mod tests {
     }
 
     #[test]
-    fn doctor_reports_no_agents_without_next_step() {
+    fn doctor_offers_a_next_step_when_no_agent_is_configured() {
         let report = json!({"failures":0,"checks":[],"agent_configs":[],"tool_count":62});
-        assert!(render_doctor(&report).contains("run `aero connect opencode`"));
+        let rendered = render_doctor(&report);
+        assert!(rendered.contains("Configured agents: none"));
+        assert!(
+            rendered.contains("delta agents"),
+            "an unconfigured install must point at the detection command"
+        );
+    }
+
+    #[test]
+    fn doctor_calls_out_installed_but_unconfigured_agents() {
+        let report = json!({
+            "failures": 0,
+            "checks": [],
+            "agent_configs": [
+                {"agent": "opencode", "configured": true, "detected": true},
+                {"agent": "cursor", "configured": false, "detected": true}
+            ],
+            "tool_count": 62
+        });
+        let rendered = render_doctor(&report);
+        assert!(rendered.contains("Configured agents: opencode"));
+        assert!(rendered.contains("Installed but not configured: cursor"));
+        assert!(rendered.contains("delta connect all --install"));
     }
 
     #[test]

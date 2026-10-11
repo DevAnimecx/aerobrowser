@@ -56,7 +56,7 @@ impl Group {
                 );
             }
         }
-        let path = root.join(format!("aero-{}", uuid::Uuid::new_v4()));
+        let path = root.join(format!("delta-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir(&path)?;
         let g = Self { path };
         if let Some(mb) = memory_mb {
