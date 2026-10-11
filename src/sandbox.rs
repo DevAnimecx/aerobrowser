@@ -81,14 +81,18 @@ impl Profile {
     }
 }
 pub fn probe() -> serde_json::Value {
+    // Each platform block is the tail of the function rather than an early
+    // `return`. Clippy's needless_return only fires on the branch a given
+    // target actually compiles, which is why the Linux build was the one
+    // failing and a Windows checkout was clean.
     #[cfg(target_os = "linux")]
     unsafe {
         let abi = libc::syscall(444, std::ptr::null::<u8>(), 0, 1);
-        return serde_json::json!({"platform":"linux","landlock_abi":if abi>=0{Some(abi)}else{None},"supported":abi>=2,"required_abi":2,"abi2_compatibility":"truncate/ftruncate syscalls denied by seccomp","seccomp":true});
+        serde_json::json!({"platform":"linux","landlock_abi":if abi>=0{Some(abi)}else{None},"supported":abi>=2,"required_abi":2,"abi2_compatibility":"truncate/ftruncate syscalls denied by seccomp","seccomp":true})
     }
     #[cfg(target_os = "macos")]
     {
-        return serde_json::json!({"platform":"macos","seatbelt_available":std::path::Path::new("/usr/bin/sandbox-exec").exists(),"validated":false});
+        serde_json::json!({"platform":"macos","seatbelt_available":std::path::Path::new("/usr/bin/sandbox-exec").exists(),"validated":false})
     }
     #[cfg(not(any(target_os = "linux", target_os = "macos")))]
     {
