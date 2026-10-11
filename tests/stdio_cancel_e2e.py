@@ -1,7 +1,18 @@
 import os,json,subprocess,time,select
 from pathlib import Path
-binary=os.environ.get('DELTA_BIN','target/release/delta');engine=os.environ['MOLI_PATH']
-p=subprocess.Popen([binary,'--engine','moli','--engine-path',engine,'mcp'],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
+binary=os.environ.get('DELTA_BIN','target/release/delta')
+# Cancellation is a property of the stdio transport, not of the engine, so this
+# runs against the managed Moli engine when one is on the host and falls back to
+# the external engine otherwise. Requiring MOLI_PATH unconditionally meant the
+# suite raised KeyError on every runner that had not downloaded the managed
+# engine, so it never actually ran anywhere.
+moli=os.environ.get('MOLI_PATH')
+if moli:
+ argv=[binary,'--engine','moli','--engine-path',moli,'mcp']
+else:
+ os.environ.setdefault('DELTA_CDP','http://127.0.0.1:9222')
+ argv=[binary,'--engine','external','mcp']
+p=subprocess.Popen(argv,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
 def send(v):p.stdin.write(json.dumps(v)+'\n');p.stdin.flush()
 def read():
  assert select.select([p.stdout],[],[],8)[0],'stdio reply timed out'
