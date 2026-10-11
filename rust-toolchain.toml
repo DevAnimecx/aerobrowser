@@ -1,0 +1,9 @@
+# Pin the toolchain so a build in 2027 reproduces the one that shipped.
+#
+# `stable` alone means a release can be rebuilt with a compiler that did not
+# exist when it was cut, which is exactly the situation in which a published
+# checksum stops matching.
+[toolchain]
+channel = "stable"
+components = ["rustfmt", "clippy"]
+profile = "minimal"
