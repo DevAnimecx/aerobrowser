@@ -319,7 +319,9 @@ impl Session {
                         ("snapshot", "delta://session/current/snapshot")
                     }
                     Some("delta://server/status") => ("server_status", "delta://server/status"),
-                    Some("delta://session/current/dom") => ("get_dom", "delta://session/current/dom"),
+                    Some("delta://session/current/dom") => {
+                        ("get_dom", "delta://session/current/dom")
+                    }
                     Some("delta://session/current/performance") => {
                         ("get_performance", "delta://session/current/performance")
                     }

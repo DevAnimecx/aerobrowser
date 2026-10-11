@@ -642,6 +642,25 @@ fn install_codex(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::{Mutex, MutexGuard, OnceLock};
+
+    /// The process environment is global mutable state.
+    ///
+    /// Two of these tests set and unset `HOME`/`USERPROFILE` while others call
+    /// `home_dir()` indirectly. Under the default parallel test runner that is
+    /// a data race, and it showed up as an intermittent
+    /// `assertion failed: home_dir().is_none()`. CI masked it with
+    /// `--test-threads=1`, but a contributor running plain `cargo test` got a
+    /// coin-flip. Every test that reads or writes the environment takes this
+    /// lock, so the suite is deterministic everywhere rather than only in CI.
+    fn env_lock() -> MutexGuard<'static, ()> {
+        static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+        // A panic in one test poisons the mutex; the environment is restored by
+        // the panicking test's own cleanup, so continuing is correct here.
+        LOCK.get_or_init(|| Mutex::new(()))
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+    }
 
     #[test]
     fn formats() {
@@ -672,12 +691,14 @@ mod tests {
 
     #[test]
     fn detect_engine_returns_known_variant() {
+        let _env = env_lock();
         let (engine, _, _) = detect_engine();
         assert!(["moli", "external"].contains(&engine.as_str()));
     }
 
     #[test]
     fn every_adapted_agent_has_a_distinct_config_path() {
+        let _env = env_lock();
         // Two agents sharing a path would mean one overwrites the other's config.
         let mut seen = std::collections::HashSet::new();
         for agent in AGENTS {
@@ -693,12 +714,14 @@ mod tests {
 
     #[test]
     fn unknown_agents_still_get_a_usable_path() {
+        let _env = env_lock();
         let path = default_config_path("some-future-agent");
         assert!(path.to_string_lossy().contains("some-future-agent"));
     }
 
     #[test]
     fn detection_reports_every_agent_with_both_states() {
+        let _env = env_lock();
         let detected = detect_agents();
         assert_eq!(detected.len(), AGENTS.len());
         for agent in &detected {
@@ -716,6 +739,7 @@ mod tests {
 
     #[test]
     fn home_dir_reports_the_source_variable() {
+        let _env = env_lock();
         let previous_home = std::env::var_os("HOME");
         let previous_profile = std::env::var_os("USERPROFILE");
 
@@ -739,6 +763,7 @@ mod tests {
 
     #[test]
     fn home_dir_prefers_home_then_userprofile() {
+        let _env = env_lock();
         // Either variable is enough; both unset means no home.
         let previous_home = std::env::var_os("HOME");
         let previous_profile = std::env::var_os("USERPROFILE");

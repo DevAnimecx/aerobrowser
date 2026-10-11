@@ -9,7 +9,7 @@
 [![CI](https://github.com/DevAnimecx/deltabrowser/actions/workflows/ci.yml/badge.svg)](https://github.com/DevAnimecx/deltabrowser/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/DevAnimecx/deltabrowser.svg)](https://github.com/DevAnimecx/deltabrowser/releases/latest)
 [![License](https://img.shields.io/badge/license-BSL--1.1-blue.svg)](LICENSE)
-[![Rust](https://img.shields.io/badge/rust-1.75%2B-orange.svg)](https://www.rust-lang.org)
+[![Rust](https://img.shields.io/badge/rust-stable-orange.svg)](https://www.rust-lang.org)
 [![Platforms](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows%20%7C%20WSL-lightgrey.svg)](#supported-platforms)
 [![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-blue.svg)](https://modelcontextprotocol.io)
 [![License: BSL-1.1](https://img.shields.io/badge/License-Business%20Source%201.1-yellow.svg)](LICENSE)

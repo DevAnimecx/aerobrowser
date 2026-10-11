@@ -2,7 +2,6 @@
 name = "deltabrowser"
 version = "0.0.1"
 edition = "2021"
-rust-version = "1.75"
 license = "BSL-1.1"
 description = "Delta Browser - a Model Context Protocol browser for AI agents: 62 MCP tools, batched calls, delta snapshots, persistent sessions, and a kernel-enforced sandbox"
 readme = "README.md"

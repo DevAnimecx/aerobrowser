@@ -1007,7 +1007,9 @@ fn render_doctor(report: &Value) -> String {
         ));
         out.push_str("    run `delta connect all --install` to configure every one\n");
     } else if detected.is_empty() {
-        out.push_str("  Run `delta agents` to see what is installed, then `delta connect <name>`\n");
+        out.push_str(
+            "  Run `delta agents` to see what is installed, then `delta connect <name>`\n",
+        );
     }
     out.push_str(&format!("  Tools available: {}\n\n", report["tool_count"]));
     if report["failures"] != 0 {
@@ -1475,7 +1477,10 @@ mod tests {
         let rendered = render_agents("external", &agents);
 
         for name in crate::profiles::AGENTS {
-            assert!(rendered.contains(name), "{name} missing from `delta agents`");
+            assert!(
+                rendered.contains(name),
+                "{name} missing from `delta agents`"
+            );
         }
         assert!(rendered.contains("configured"));
         assert!(rendered.contains("detected"));
