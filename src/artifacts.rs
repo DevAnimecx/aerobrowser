@@ -15,7 +15,7 @@ impl Artifacts {
             .unwrap_or_else(|| std::env::temp_dir().join("delta-artifacts"));
         std::fs::create_dir_all(&base)?;
         let root = base.join(uuid::Uuid::new_v4().to_string());
-        let d = std::fs::DirBuilder::new();
+        let mut d = std::fs::DirBuilder::new();
         #[cfg(unix)]
         {
             use std::os::unix::fs::DirBuilderExt;
