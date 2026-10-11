@@ -1,0 +1,57 @@
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Weekly, so a newly published advisory lands even with no code change.
+    - cron: "37 5 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dependency-review:
+    name: Dependency review
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Fails a pull request that introduces a dependency with a known
+      # advisory or a licence the project cannot ship. Only runs on pull
+      # requests: it needs the base commit to diff against.
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: moderate
+          deny-licenses: AGPL-3.0, SSPL-1.0, BUSL-1.1
+
+  cargo-audit:
+    name: Vulnerability audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --locked
+      - name: Audit the dependency graph
+        # --deny warnings turns advisories into a failure. Delta Browser
+        # downloads and launches a browser engine, so a known-vulnerable
+        # transitive dependency is a real exposure, not a lint.
+        run: cargo audit
+
+  sbom:
+    name: SBOM stays in sync
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Regenerate and compare
+        run: python scripts/generate-sbom.py --check
