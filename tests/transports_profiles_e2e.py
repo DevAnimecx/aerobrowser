@@ -35,6 +35,18 @@ with tempfile.TemporaryDirectory() as td:
   if agent=='codex':check('Codex TOML schema',tomllib.loads(content)['mcp_servers']['delta']['args']==['mcp'])
   elif agent=='hermes':check('Hermes YAML schema','mcp_servers:' in content)
   else:check(agent+' valid JSON',isinstance(json.loads(content),dict))
-  p=subprocess.run(args,capture_output=True,text=True);check(agent+' conflict refused',p.returncode!=0)
+  # Reinstalling refreshes Delta's own entry rather than conflicting, because
+  # the documented one-command install runs on machines that already have a
+  # delta entry. What still matters is that the refresh is non-destructive:
+  # it succeeds, it backs up, and it leaves everything else alone.
+  p=subprocess.run(args,capture_output=True,text=True);check(agent+' refresh succeeds',p.returncode==0)
+  r=json.loads(p.stdout);check(agent+' refresh backs up',pathlib.Path(r['backup']).exists())
+  check(agent+' refresh preserves unrelated settings','preserve-me' in path.read_text())
   p=subprocess.run(args+['--force'],capture_output=True,text=True);check(agent+' explicit replace',p.returncode==0)
+ # generic replaces the whole config file rather than one key, so it is the one
+ # path that must still refuse to clobber an existing file without --force.
+ g=pathlib.Path(td)/'generic.json';g.write_text(json.dumps({'unrelated':'preserve-me'}))
+ gargs=[BIN,'--engine','external','profile','install','generic','--path',str(g)]
+ p=subprocess.run(gargs,capture_output=True,text=True);check('generic export refuses without --force',p.returncode!=0)
+ p=subprocess.run(gargs+['--force'],capture_output=True,text=True);check('generic export with --force',p.returncode==0)
 pathlib.Path(os.environ.get('DELTA_EVIDENCE_DIR','artifacts/v04')+'/transports-profiles.json').write_text(json.dumps({'passed':len(checks),'checks':checks},indent=2));print(json.dumps({'passed':len(checks),'checks':checks},indent=2))

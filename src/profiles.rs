@@ -324,7 +324,7 @@ pub fn install(
     // install_codex unreachable, so installing a Codex config always failed
     // with "Client file location must be supplied explicitly".
     if agent == "codex" {
-        return install_codex(path, &exe, engine, endpoint, force);
+        return install_codex(path, &exe, engine, endpoint);
     }
     let template = template(agent, &exe, engine, endpoint)?;
 
@@ -564,13 +564,7 @@ pub async fn connect(
     Ok(out)
 }
 
-fn install_codex(
-    path: &Path,
-    exe: &str,
-    engine: &str,
-    endpoint: &str,
-    force: bool,
-) -> Result<Value> {
+fn install_codex(path: &Path, exe: &str, engine: &str, endpoint: &str) -> Result<Value> {
     use toml_edit::{value, Array, DocumentMut, Item, Table};
 
     if path
@@ -594,9 +588,9 @@ fn install_codex(
         .as_table_mut()
         .ok_or_else(|| anyhow::anyhow!("mcp_servers must be a TOML table"))?;
 
-    if servers.contains_key("delta") && !force {
-        bail!("Delta configuration exists; use --force for backed-up replacement");
-    }
+    // The delta table belongs to this project, so reinstalling over it is a
+    // refresh rather than a conflict, and the whole file is backed up below.
+    // This matches the JSON path, which is why `force` is no longer a parameter.
 
     let mut table = Table::new();
     table["command"] = value(exe);
