@@ -1,6 +1,6 @@
 # Third-party components
 
-The AeroBrowser wrapper source is licensed under the Business Source License 1.1
+The Delta Browser wrapper source is licensed under the Business Source License 1.1
 with an Additional Use Grant — see `LICENSE` for the full terms, including the
 revenue threshold and the conditions under which commercial use requires a paid
 license. Dependencies retain their own licenses.

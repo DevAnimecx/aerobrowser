@@ -20,7 +20,7 @@ ship a fix before disclosing publicly.
 
 ## Trust model
 
-AeroBrowser runs **untrusted web content**. The design assumes any page it opens may
+Delta Browser runs **untrusted web content**. The design assumes any page it opens may
 attempt to escape its bounds.
 
 Page content is data, never instructions. Nothing scraped from a page should ever be
@@ -47,7 +47,7 @@ treated as a directive to the agent.
 
 ### What is NOT enforced
 
-Read this section before relying on AeroBrowser with hostile content.
+Read this section before relying on Delta Browser with hostile content.
 
 | Gap | Reality |
 |---|---|
@@ -55,12 +55,12 @@ Read this section before relying on AeroBrowser with hostile content.
 | **`base`, `web-dev`, `test` profiles do not exist** | They are declared and refuse to run. Only `scrape`, `offline`, `untrusted`, and `full` are implemented. |
 | **Windows has no containment** | No AppContainer, no Job Object, no memory or PID ceiling. Use an external browser and treat isolation as that browser's responsibility. |
 | **macOS Seatbelt is unvalidated** | The code path exists but has not been exercised. |
-| **External engines are unsandboxed** | When you point AeroBrowser at your own Chrome via CDP, isolation is Chrome's. There is no kernel policy. |
+| **External engines are unsandboxed** | When you point Delta Browser at your own Chrome via CDP, isolation is Chrome's. There is no kernel policy. |
 | **State is not encrypted at rest** | `save_state` output and the auth token are plaintext. Protect them at the filesystem level. |
 | **`evaluate` is unrestricted** | Any authenticated principal can run arbitrary JavaScript in the page. The schema calls this "trusted clients only" but does not enforce it. |
-| **AERO_TOKEN implies admin** | Any token supplied via `AERO_TOKEN` becomes an admin principal. Binding the daemon beyond loopback hands out admin shutdown. |
+| **DELTA_TOKEN implies admin** | Any token supplied via `DELTA_TOKEN` becomes an admin principal. Binding the daemon beyond loopback hands out admin shutdown. |
 
-`aero server_status` reports the actual engine, sandbox, and isolation for the
+`delta server_status` reports the actual engine, sandbox, and isolation for the
 running session. If `sandbox` does not say Landlock or Seatbelt, you do not have a
 kernel policy.
 
@@ -68,9 +68,9 @@ kernel policy.
 
 - Bind the daemon to loopback. There is no TLS and no OAuth; do not expose it.
 - Run the managed engine with `offline` unless you genuinely need network access.
-- Use a separate principal per client via `AERO_AUTH_FILE` rather than sharing one
+- Use a separate principal per client via `DELTA_AUTH_FILE` rather than sharing one
   admin token.
-- Set `AERO_MEMORY_LIMIT_MB` and `AERO_PIDS_LIMIT` on Linux to bound a runaway page.
+- Set `DELTA_MEMORY_LIMIT_MB` and `DELTA_PIDS_LIMIT` on Linux to bound a runaway page.
 - Verify downloads against `SHA256SUMS`. Releases publish GitHub build provenance.
 
 ## Known limitations in generated artifacts

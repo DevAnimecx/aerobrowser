@@ -1,4 +1,4 @@
-# Contributing to AeroBrowser
+# Contributing to Delta Browser
 
 Thanks for taking the time to contribute.
 
@@ -14,8 +14,8 @@ Thanks for taking the time to contribute.
 ### Build
 
 ```sh
-git clone https://github.com/DevAnimecx/aerobrowser.git
-cd aerobrowser
+git clone https://github.com/DevAnimecx/deltabrowser.git
+cd deltabrowser
 cargo build --release --locked
 ```
 
@@ -53,10 +53,10 @@ python3 -m http.server 4173 --bind 127.0.0.1 --directory examples
 google-chrome --headless --no-sandbox --remote-debugging-port=9222 about:blank &
 
 # 3. Terminal 3 — daemon and tests
-export AERO_TOKEN=$(openssl rand -hex 32)
-export AERO_UPLOAD_ROOT="$PWD/examples"
-export AERO_EXPECT_VERSION="0.5.0"
-target/release/aero mcp --transport http &
+export DELTA_TOKEN=$(openssl rand -hex 32)
+export DELTA_UPLOAD_ROOT="$PWD/examples"
+export DELTA_EXPECT_VERSION="0.0.1"
+target/release/delta mcp --transport http &
 
 # Wait for readiness
 until curl --fail http://127.0.0.1:8931/health >/dev/null; do sleep 1; done
@@ -64,11 +64,11 @@ until curl --fail http://127.0.0.1:8931/health >/dev/null; do sleep 1; done
 python3 tests/e2e_extended.py
 python3 tests/transports_profiles_e2e.py
 python3 tests/supervisor_e2e.py
-python3 tests/v03_stdio_cancel.py
+python3 tests/stdio_cancel_e2e.py
 ```
 
-The Moli, cgroup, and Landlock suites (`moli_e2e.py`, `v03_real_e2e.py`,
-`sandbox_e2e.py`, `bundled_e2e.py`, `v04_state_e2e.py`) require Linux with the
+The Moli, cgroup, and Landlock suites (`moli_e2e.py`, `sandbox_delegation_e2e.py`,
+`sandbox_e2e.py`, `bundled_e2e.py`, `state_e2e.py`) require Linux with the
 relevant kernel facilities and are run by a separate CI job that skips with a
 notice when the kernel lacks them.
 
@@ -94,7 +94,7 @@ notice when the kernel lacks them.
 - Public items get doc comments explaining what is guaranteed, not just what the
   code does.
 - No mocks in tests, except the explicitly opt-in network mocks guarded by
-  `AERO_ALLOW_NETWORK_MOCKS=1`.
+  `DELTA_ALLOW_NETWORK_MOCKS=1`.
 - Security defaults fail closed. An unimplemented policy errors rather than
   degrading.
 
@@ -119,5 +119,5 @@ Contributions are licensed under the Business Source License 1.1. See
 
 Participation is governed by the [Code of Conduct](CODE_OF_CONDUCT.md).
 
-Questions go to [Discussions](https://github.com/DevAnimecx/aerobrowser/discussions);
-bugs to [Issues](https://github.com/DevAnimecx/aerobrowser/issues).
+Questions go to [Discussions](https://github.com/DevAnimecx/deltabrowser/discussions);
+bugs to [Issues](https://github.com/DevAnimecx/deltabrowser/issues).

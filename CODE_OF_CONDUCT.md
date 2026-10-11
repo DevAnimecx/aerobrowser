@@ -57,5 +57,5 @@ Community managers: @blackvault-technology
 
 ---
 
-For questions, contact: conduct@aerobrowser.dev
+For questions, contact: conduct@deltabrowser.dev
 
