@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the declared-dependency CycloneDX inventory for AeroBrowser.
+"""Generate the declared-dependency CycloneDX inventory for DeltaBrowser.
 
 Scope, stated plainly: this is an inventory of the crates Cargo resolved for the
 workspace plus the pinned Moli engine executable, using the licenses those crates
@@ -72,7 +72,7 @@ def build():
                 {"license": {"id": PROJECT_LICENSE, "url": PROJECT_LICENSE_URL}}
             ]
             component["properties"] = [
-                {"name": "aero:commercial-license", "value": "paid license required above USD 10M revenue or for service offerings; see LICENSE"}
+                {"name": "delta:commercial-license", "value": "paid license required above USD 10M revenue or for service offerings; see LICENSE"}
             ]
             application = component
         else:
@@ -96,7 +96,7 @@ def build():
             "externalReferences": [{"type": "distribution", "url": pin["url"]}],
             "properties": [
                 {
-                    "name": "aero:inventory-scope",
+                    "name": "delta:inventory-scope",
                     "value": "Pinned engine executable only; see bundled upstream licenses for its dependencies.",
                 }
             ],
@@ -123,7 +123,7 @@ def build():
             .isoformat()
             .replace("+00:00", "Z"),
             "component": application,
-            "properties": [{"name": "aero:scope", "value": SCOPE_PROPERTY}],
+            "properties": [{"name": "delta:scope", "value": SCOPE_PROPERTY}],
         },
         "components": components,
         "dependencies": dependencies,

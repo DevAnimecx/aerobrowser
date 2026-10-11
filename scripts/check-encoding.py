@@ -15,7 +15,7 @@ MARKERS = {
     "BOM mid-file": "﻿",
 }
 
-SUFFIXES = {".md", ".rs", ".sh", ".ps1", ".py", ".yml", ".yaml", ".json", ".toml", ".html", ".aero"}
+SUFFIXES = {".md", ".rs", ".sh", ".ps1", ".py", ".yml", ".yaml", ".json", ".toml", ".html", ".delta"}
 SKIP_DIRS = {"target", "node_modules", ".git", "artifacts", "package-v04", ".opencode"}
 
 # These files name the corruption markers as test data, so they must contain them.

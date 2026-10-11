@@ -62,7 +62,7 @@ def main():
         readme = ROOT / name
         if not readme.exists():
             continue
-        for quoted in re.findall(r"aero (\d+\.\d+\.\d+)", readme.read_text(encoding="utf-8")):
+        for quoted in re.findall(r"delta (\d+\.\d+\.\d+)", readme.read_text(encoding="utf-8")):
             if quoted != version:
                 failures.append("%s quotes version %s but Cargo.toml is %s" % (name, quoted, version))
 
