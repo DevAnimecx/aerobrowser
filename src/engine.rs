@@ -253,7 +253,12 @@ impl Engine {
     }
 }
 pub fn worker(path: &std::path::Path) -> Result<()> {
-    let _worker: Worker = serde_json::from_slice(&std::fs::read(path)?)?;
+    // Named `worker` deliberately: it shadows the enclosing function in the
+    // value namespace so the `worker.profile` / `worker.executable` reads below
+    // resolve to this struct. Naming it `_worker` left those expressions
+    // resolving to the function item instead, which compiled on Windows and
+    // macOS (where both cfg blocks are removed) but failed every Linux build.
+    let worker: Worker = serde_json::from_slice(&std::fs::read(path)?)?;
     std::fs::remove_file(path)?;
     #[cfg(target_os = "linux")]
     {
@@ -305,6 +310,10 @@ pub fn worker(path: &std::path::Path) -> Result<()> {
     }
     #[cfg(not(any(target_os = "linux", target_os = "macos")))]
     {
+        // No sandbox to apply, so the parsed descriptor is deliberately unused
+        // here. It is still deserialised above so a malformed worker.json is
+        // rejected on every platform rather than only where it is applied.
+        let _ = &worker;
         bail!("Unsupported sandbox platform")
     }
 }
