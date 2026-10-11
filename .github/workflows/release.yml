@@ -137,12 +137,20 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [ "${{ matrix.os }}" = "windows-2022" ] || [ "${{ matrix.os }}" = "windows-11-arm" ]; then
-            BIN="target/${{ matrix.target }}/release/delta.exe"
-          else
-            BIN="target/${{ matrix.target }}/release/delta"
-            chmod +x "$BIN"
+          BIN="target/${{ matrix.target }}/release/delta"
+          [ -f "$BIN" ] || BIN="target/${{ matrix.target }}/release/delta.exe"
+          if [ ! -f "$BIN" ]; then
+            echo "::error::no built binary at $BIN"; exit 1
           fi
+          if [ "${{ matrix.target }}" = "aarch64-unknown-linux-gnu" ]; then
+            # Cross-compiled on an x86_64 runner, so it cannot be executed here.
+            # Assert what the artifact actually is rather than skipping the
+            # check, which would let a mislabelled or truncated binary ship.
+            file "$BIN" | grep -q "ARM aarch64"
+            echo "cross-compiled artifact verified as aarch64 ELF"
+            exit 0
+          fi
+          chmod +x "$BIN"
           "$BIN" --version
           "$BIN" doctor --json > doctor.json
           echo "doctor produced $(wc -c < doctor.json) bytes"
