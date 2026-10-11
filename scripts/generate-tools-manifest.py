@@ -39,10 +39,12 @@ def main():
     tools = json.loads(raw)["tools"]
     tools.sort(key=lambda t: t["name"])
 
-    OUTPUT.write_text(
-        json.dumps({"tools": tools}, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
+    # newline="\n" is not optional. Path.write_text translates "\n" to the
+    # platform newline, so generating on Windows produced a CRLF file that a
+    # Linux CI run then rewrote as LF and reported as a change, even though
+    # the content was byte-identical.
+    with OUTPUT.open("w", encoding="utf-8", newline="\n") as fh:
+        fh.write(json.dumps({"tools": tools}, indent=2, sort_keys=True) + "\n")
     print("wrote %s (%d tools)" % (OUTPUT.relative_to(ROOT), len(tools)))
     return 0
 

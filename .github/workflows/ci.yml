@@ -113,7 +113,11 @@ jobs:
         run: |
           set -euo pipefail
           export DELTA_UPLOAD_ROOT="$PWD/examples"
-          mkdir -p artifacts/v05
+          # Every suite writes its evidence under DELTA_EVIDENCE_DIR and
+          # defaults to artifacts/v04. Creating a different directory left the
+          # suites writing into a tree that did not exist yet.
+          export DELTA_EVIDENCE_DIR="$PWD/artifacts/v04"
+          mkdir -p "$DELTA_EVIDENCE_DIR"
 
           CHROME=$(find "$HOME/.cache/ms-playwright" -path '*/chrome-linux*/chrome' -type f | head -1)
           if [ -z "$CHROME" ]; then
@@ -163,6 +167,8 @@ jobs:
     # Landlock, seccomp and cgroup v2 require a Linux kernel with the relevant
     # controllers; hosted macOS/Windows runners cannot exercise them.
     runs-on: ubuntu-latest
+    env:
+      DELTA_EVIDENCE_DIR: ${{ github.workspace }}/artifacts/v04
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -172,6 +178,7 @@ jobs:
           python-version: '3.12'
       - run: sudo apt-get update && sudo apt-get install -y gcc
       - run: cargo build --locked
+      - run: mkdir -p "$DELTA_EVIDENCE_DIR"
       - name: Sandbox probe
         run: |
           set -euo pipefail
@@ -195,6 +202,17 @@ jobs:
           fi
           if ! grep -qw memory /sys/fs/cgroup/cgroup.controllers; then
             echo "::notice::The memory controller is not delegated; skipping OOM assertions."
+            exit 0
+          fi
+          # scripts/run-delegated.sh refuses to run without a systemd
+          # Delegate=yes scope, and a stock GitHub runner has cgroup v2 but
+          # does not delegate it. Test the same precondition the script does
+          # so the job skips with a notice instead of failing on a guarantee
+          # it cannot meet on this host.
+          relative=$(awk -F: '$1=="0" {print $3}' /proc/self/cgroup)
+          root="/sys/fs/cgroup${relative:-}"
+          if [ ! -w "$root/cgroup.subtree_control" ] || [ ! -w "$root/cgroup.procs" ]; then
+            echo "::notice::cgroup v2 is not delegated to the runner user; skipping cgroup assertions."
             exit 0
           fi
           bash scripts/run-delegated.sh

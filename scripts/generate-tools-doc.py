@@ -116,13 +116,18 @@ def build():
 def main():
     text, tools = build()
     if "--check" in sys.argv:
-        current = OUTPUT.read_text(encoding="utf-8") if OUTPUT.exists() else ""
+        current = (
+            OUTPUT.read_text(encoding="utf-8") if OUTPUT.exists() else ""
+        )
         if current != text:
             print("docs/TOOLS.md is stale; run scripts/generate-tools-doc.py")
             return 1
         print("docs/TOOLS.md is up to date (%d tools)" % len(tools))
         return 0
-    OUTPUT.write_text(text, encoding="utf-8")
+    # newline="\n" for the same reason as generate-tools-manifest.py: without
+    # it a Windows run writes CRLF and a Linux run sees the file as changed.
+    with OUTPUT.open("w", encoding="utf-8", newline="\n") as fh:
+        fh.write(text)
     print("wrote %s (%d tools)" % (OUTPUT.relative_to(ROOT), len(tools)))
     return 0
 
