@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/DevAnimecx/deltabrowser/security/advisories/new
+    about: Report a vulnerability privately. Please do not open a public issue.
+  - name: AeroBrowser migration question
+    url: https://github.com/DevAnimecx/deltabrowser/blob/main/docs/MIGRATION.md
+    about: Every renamed name is listed here, with the four-step upgrade.
+  - name: What is not implemented
+    url: https://github.com/DevAnimecx/deltabrowser/blob/main/docs/ROADMAP.md
+    about: Check this before filing a bug; it may already be a documented gap.
+  - name: Ask a usage question
+    url: https://github.com/DevAnimecx/deltabrowser/discussions
+    about: Questions about driving the tools from an agent.
