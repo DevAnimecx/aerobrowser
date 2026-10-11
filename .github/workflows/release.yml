@@ -62,7 +62,10 @@ jobs:
           - os: macos-14
             target: aarch64-apple-darwin
             artifact: delta-macos-aarch64
-          - os: macos-13
+          # macos-13 was retired by GitHub; macos-15-intel is the current
+          # x86_64 macOS image. A retired label does not fail loudly, it simply
+          # never schedules, so the release silently loses an artifact.
+          - os: macos-15-intel
             target: x86_64-apple-darwin
             artifact: delta-macos-x86_64
           - os: windows-2022
