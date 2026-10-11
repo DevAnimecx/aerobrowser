@@ -1,10 +1,10 @@
-# Deploying AeroBrowser 0.4
+# Deploying Delta Browser 0.4
 
 ## Single-file Linux distribution
 
 ```bash
-chmod +x package-v04/aero-bundled-linux-x86_64
-./package-v04/aero-bundled-linux-x86_64 mcp  # stdio, no bearer token needed
+chmod +x package-v04/delta-bundled-linux-x86_64
+./package-v04/delta-bundled-linux-x86_64 mcp  # stdio, no bearer token needed
 ```
 
 The bundled file contains a pinned compressed Moli engine. It verifies and extracts the engine into the user's cache before launching a separate sandboxed worker. This is not an in-process browser, a statically linked system image, or a 40 ms cold launch. No Docker or Node runtime is required. Linux shared libraries and fonts are still needed.
@@ -14,11 +14,11 @@ The bundled file contains a pinned compressed Moli engine. It verifies and extra
 For one operator, generate a random token (at least 24 characters):
 
 ```bash
-export AERO_TOKEN="$(openssl rand -hex 32)"
-./package-v04/aero-bundled-linux-x86_64 mcp --transport http
+export DELTA_TOKEN="$(openssl rand -hex 32)"
+./package-v04/delta-bundled-linux-x86_64 mcp --transport http
 ```
 
-For multiple principals, set `AERO_AUTH_FILE` to a protected JSON file:
+For multiple principals, set `DELTA_AUTH_FILE` to a protected JSON file:
 
 ```json
 {"principals":[
@@ -27,7 +27,7 @@ For multiple principals, set `AERO_AUTH_FILE` to a protected JSON file:
 ]}
 ```
 
-Generate each independent high-entropy bearer token yourself; hash its exact bytes without a newline. Digests must be 64 lowercase hexadecimal characters. Keep the bearer tokens secret. Example placeholders above are deliberately invalid; they cannot authenticate. There are no default production credentials. If `AERO_TOKEN` is also present, it adds an admin principal named `operator`; avoid conflicting IDs. Configuration is loaded on startup; restart to rotate/revoke credentials.
+Generate each independent high-entropy bearer token yourself; hash its exact bytes without a newline. Digests must be 64 lowercase hexadecimal characters. Keep the bearer tokens secret. Example placeholders above are deliberately invalid; they cannot authenticate. There are no default production credentials. If `DELTA_TOKEN` is also present, it adds an admin principal named `operator`; avoid conflicting IDs. Configuration is loaded on startup; restart to rotate/revoke credentials.
 
 All HTTP browser endpoints require `Authorization: Bearer TOKEN`. MCP, SSE, CLI, cancellation, and DELETE operations are owner-bound. Even an admin cannot borrow another principal's browser session. Only admins can call `POST /admin/shutdown`; MCP `server_shutdown` still closes just the caller's browser. `GET /whoami` returns the authenticated identity and actual session counts. `/health` is process liveness, not a browser readiness claim. Browser Origin headers are denied.
 
@@ -37,14 +37,14 @@ Bind to loopback by default. Remote deployments need your TLS reverse proxy and 
 
 ## Request lifecycle
 
-`AERO_REQUEST_TIMEOUT_MS` defaults to 120000; permitted range 100–900000. One actor serializes operations per session. Eight requests may wait; overflow is rejected, never silently reordered. Other sessions execute independently. MCP cancellation notifications are processed outside the operation queue.
+`DELTA_REQUEST_TIMEOUT_MS` defaults to 120000; permitted range 100–900000. One actor serializes operations per session. Eight requests may wait; overflow is rejected, never silently reordered. Other sessions execute independently. MCP cancellation notifications are processed outside the operation queue.
 
 Cancellation/deadline destroys the managed browser worker and invalidates its refs/state. The next browser tool launches a fresh worker. Already completed clicks, submissions, or external writes are **not rolled back**, and there is no automatic retry of non-idempotent work. External CDP contexts get a bounded disposal attempt; a dead external engine can prevent cleanup. JSON-RPC responses must be correlated by ID, not arrival position.
 
 ## Actual memory and PID limits
 
 ```bash
-./package-v04/aero-bundled-linux-x86_64 \
+./package-v04/delta-bundled-linux-x86_64 \
   --cgroup-root "$DELEGATED_CGROUP" \
   --memory-limit-mb 256 --pids-limit 128 mcp
 ```
@@ -53,17 +53,17 @@ Linux cgroup v2 is required. The configured parent must already delegate and ena
 
 `server_status.resources` reads live cgroup memory, peak, PID, CPU and OOM counters. The limit includes worker descendants, not the supervisor. A PID limit counts threads as well as processes. Unlimited/unavailable numeric values are null. The supervisor itself needs its own deployment-level memory budget. Normal close, cancellation and graceful shutdown await worker reaping and cgroup removal. Emergency Drop cleanup remains best effort after unexpected supervisor termination; operators may need to remove empty owned subgroups.
 
-`scripts/run-delegated.sh` prepares supervisor/worker child groups inside an already delegated service/scope, then execs the supplied command. It refuses the global root and groups containing other processes. It does not use sudo or grant itself privileges. A typical systemd service uses `User=aero`, `Delegate=yes`, and an ExecStart such as:
+`scripts/run-delegated.sh` prepares supervisor/worker child groups inside an already delegated service/scope, then execs the supplied command. It refuses the global root and groups containing other processes. It does not use sudo or grant itself privileges. A typical systemd service uses `User=delta`, `Delegate=yes`, and an ExecStart such as:
 
 ```text
-/opt/aero/scripts/run-delegated.sh /opt/aero/package-v04/aero-bundled-linux-x86_64 --memory-limit-mb 256 --pids-limit 128 mcp --transport http
+/opt/delta/scripts/run-delegated.sh /opt/delta/package-v04/delta-bundled-linux-x86_64 --memory-limit-mb 256 --pids-limit 128 mcp --transport http
 ```
 
 Configure the auth-file environment, service resource ceiling, TLS proxy, filesystem permissions, restart policy and logs for your environment. The delegation helper and kernel limits were tested directly; a complete systemd deployment was not exercised in this sandbox. Do not make global cgroup controls writable to untrusted users.
 
 ## No default mocks
 
-Normal execution uses the real browser and network. `intercept_request` with `action=mock` fails unless the server operator explicitly starts with `AERO_ALLOW_NETWORK_MOCKS=1`. Enabling it is for tests, never a claim of real upstream data. Interception attempts are marked in captured HAR. Block/log rules remain available without mock permission.
+Normal execution uses the real browser and network. `intercept_request` with `action=mock` fails unless the server operator explicitly starts with `DELTA_ALLOW_NETWORK_MOCKS=1`. Enabling it is for tests, never a claim of real upstream data. Interception attempts are marked in captured HAR. Block/log rules remain available without mock permission.
 
 Test fixtures live in `tests/` and `examples/`; they are not runtime data. HAR omits bodies and unfinished requests, preserves redirects, and records unknown sizes/timings as -1 instead of estimates. Authorization/cookie/API-key header values are redacted in HAR; URLs, query parameters, and raw network logs can still contain secrets. Protect exported artifacts accordingly.
 
@@ -73,7 +73,7 @@ Test fixtures live in `tests/` and `examples/`; they are not runtime data. HAR o
 cargo test --locked
 cargo build --release --locked
 # Download the exact archive from docs/engine-pin.json and verify its digest first.
-AERO_BUNDLED_MOLI_ARCHIVE=/absolute/path/moli.tar.gz \
+DELTA_BUNDLED_MOLI_ARCHIVE=/absolute/path/moli.tar.gz \
   cargo build --release --locked --features bundled-moli
 ```
 

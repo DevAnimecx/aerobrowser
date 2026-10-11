@@ -4,7 +4,7 @@
 > limits, or measured HAR are absent were superseded in 0.3; restore behaviour
 > changed in 0.4. Other limitations still apply.
 
-> Current release notes: [RELEASE-0.5.md](RELEASE-0.5.md). Deployment boundaries:
+> Current release notes: [RELEASE-0.0.md](RELEASE-0.0.md). Deployment boundaries:
 > [DEPLOYMENT.md](DEPLOYMENT.md). Outstanding gaps: [ROADMAP.md](ROADMAP.md).
 
 # Security boundaries — 0.2 (historical baseline)
@@ -34,9 +34,9 @@ This is a tested engineering build, not an audited hostile multi-tenant service.
 
 ## Other modes
 
-- External CDP browsers are not sandboxed by Aero. Their existing browser/process security is the operator's responsibility.
+- External CDP browsers are not sandboxed by Delta. Their existing browser/process security is the operator's responsibility.
 - Managed Chrome needs child processes and uses a broader policy; this managed path has not been validated. Do not infer Moli's no-child-process guarantees for it.
-- `--no-sandbox` explicitly disables Aero restrictions and is reported in status. It is a development opt-out, not a fallback.
+- `--no-sandbox` explicitly disables Delta restrictions and is reported in status. It is a development opt-out, not a fallback.
 - A macOS Seatbelt launcher exists, but its policy and runtime behavior were **not validated here**. Windows AppContainer/Job Object enforcement is not implemented.
 
 ## Access and artifacts
@@ -44,7 +44,7 @@ This is a tested engineering build, not an audited hostile multi-tenant service.
 - HTTP requires a bearer token of at least 24 characters; generate 32 random bytes. Browser Origin requests are rejected. Loopback is the default bind.
 - Token holders share one trust domain. A session ID is not an independently authenticated tenant identity. The `/cli` session is shared intentionally.
 - Raw CDP is limited to selected current-target operations. Browser/Target/Storage/IO escape-hatch methods are not exposed.
-- Server shutdown/profile tools are session-scoped. `aero stop` uses a separate authenticated admin endpoint.
+- Server shutdown/profile tools are session-scoped. `delta stop` uses a separate authenticated admin endpoint.
 - Remote artifact paths are plain filenames in a private session directory. Uploads are disabled unless an explicit authorized root is configured. Upload paths are canonicalized and constrained to that root.
 - State, screenshots, console/network output and cookies can contain secrets. Metadata operation logs omit arguments. HAR redacts selected common credential headers, **not all secrets**: URLs, other headers and network events can still reveal sensitive data.
 - Named dev-server argv/cwd/port entries are operator configuration. Agent recipes cannot supply arbitrary commands or override their args. These servers run outside the engine sandbox with the operator's privileges; environment is cleared and owned processes are cleaned up. Do not configure an unsafe command.
