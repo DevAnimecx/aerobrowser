@@ -29,8 +29,9 @@
 .PARAMETER NoVerify
     Skip SHA-256 verification. Not recommended.
 
-.EXAMPLE
-    PS> .\scripts\install.ps1 -Agent opencode
+    .EXAMPLE
+    PS> . .\scripts\install.ps1
+    PS> Install-DeltaBrowser -Agent opencode
 
 .EXAMPLE
     PS> irm https://raw.githubusercontent.com/DevAnimecx/deltabrowser/main/scripts/install.ps1 | iex; Install-DeltaBrowser -Agent opencode
@@ -295,23 +296,22 @@ function Invoke-DeltaSummary {
     Write-Host ""
 }
 
-# Three documented ways in, and each must install exactly once:
+# Define the function and stop. The caller runs it:
 #
-#   .\scripts\install.ps1 -Agent opencode      -> run it, forwarding the parameters
-#   irm .../install.ps1 | iex                 -> load it, tell the user what to type
 #   irm .../install.ps1 | iex; Install-DeltaBrowser -Agent opencode
-#                                              -> load it, the user runs the function
+#   .\scripts\install.ps1 ; Install-DeltaBrowser -Agent opencode
 #
-# An unconditional call here used to fire in all three, so the documented
-# pipe-to-iex form downloaded and installed twice. Detect the context instead:
-# Invoke-Expression is the only one that must not self-run.
-if ($MyInvocation.InvocationName -eq 'Invoke-Expression') {
-    Write-Host ""
-    Write-Host "  DeltaBrowser installer loaded." -ForegroundColor Cyan
-    Write-Host "  Now run:  Install-DeltaBrowser" -ForegroundColor White
-    Write-Host "  Or with an agent:  Install-DeltaBrowser -Agent opencode" -ForegroundColor DarkGray
-    Write-Host ""
-} else {
-    Install-DeltaBrowser -InstallDir $InstallDir -Version $Version -Force:$Force `
-        -Agent $Agent -NoProfile:$NoProfile -InstallEngine:$InstallEngine -NoVerify:$NoVerify
-}
+# There is deliberately no self-invocation and no attempt to detect how the
+# script was loaded. An unconditional call made the documented pipe-to-iex form
+# install twice, and the two context signals available to fix that are both
+# unreliable on Windows PowerShell 5.1: $MyInvocation.InvocationName evaluates
+# to the literal string
+# "System.Management.Automation.InvocationInfo.InvocationName" in every case,
+# and $MyInvocation.MyCommand is populated with the *caller's* command when the
+# text is handed to Invoke-Expression. Requiring the explicit call is the only
+# version that installs exactly once no matter how it was loaded.
+Write-Host ""
+Write-Host "  DeltaBrowser installer loaded." -ForegroundColor Cyan
+Write-Host "  Now run:  Install-DeltaBrowser" -ForegroundColor White
+Write-Host "  Or with an agent:  Install-DeltaBrowser -Agent opencode" -ForegroundColor DarkGray
+Write-Host ""
