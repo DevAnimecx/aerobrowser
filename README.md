@@ -144,30 +144,6 @@ Delta Browser is a single binary that sits between those two:
 - [Contributing](#contributing)
 - [License](#license)
 
----
-- [Why Delta Browser](#why-deltabrowser)
-- [Install](#install)
-  - [Linux and macOS](#linux-and-macos)
-  - [Windows](#windows)
-  - [Windows Subsystem for Linux](#windows-subsystem-for-linux)
-  - [Docker and containers](#docker-and-containers)
-  - [Build from source](#build-from-source)
-  - [Package managers](#package-managers)
-- [Verify your install](#verify-your-install)
-- [Connect your agent](#connect-your-agent)
-- [How agents should use it](#how-agents-should-use-it)
-- [Tools](#tools)
-- [Engines](#engines)
-- [Sandbox](#sandbox)
-- [Test recipes](#test-recipes)
-- [CLI reference](#cli-reference)
-- [Environment variables](#environment-variables)
-- [Troubleshooting](#troubleshooting)
-- [Documentation](#documentation)
-- [FAQ](#faq)
-- [Contributing](#contributing)
-- [License](#license)
-
 New to Delta Browser, or coming from AeroBrowser? Start with the
 [FAQ](docs/FAQ.md), the [agent guide](docs/AGENTS.md), or the
 [migration table](docs/MIGRATION.md).
