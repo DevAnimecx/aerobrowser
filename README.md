@@ -118,10 +118,27 @@ Delta Browser is a single binary that sits between those two:
 
 ---
 
+## Pair it with Jiro Search
+
+Search is only half of a research agent. The other half is opening the source,
+reading it, and checking the claim before acting on it.
+
+**Jiro Search** (open-source, self-hosted) returns cited claims instead of
+links. **Delta Browser** opens those sources, snapshots the page, and extracts
+the exact text — so an agent can verify a claim instead of trusting a snippet.
+
+See [docs/JIRO-INTEGRATION.md](docs/JIRO-INTEGRATION.md) for the full
+search-then-verify workflow, MCP config for both servers, and the safety
+limits (separate browser profile for untrusted pages, sandbox only on Linux
+x86_64).
+
+---
+
 ## Table of contents
 
 - [What is Delta Browser?](#what-is-delta-browser)
 - [Why an agent needs its own browser](#why-an-agent-needs-its-own-browser)
+- [Pair it with Jiro Search](#pair-it-with-jiro-search)
 - [Install](#install)
   - [Linux and macOS](#linux-and-macos)
   - [Windows](#windows)
@@ -692,6 +709,7 @@ document or URL changed. Take a second `snapshot { delta: true }`.
 | [Driving from an agent](docs/AGENTS.md) | The navigate-snapshot-act loop, batching, safety |
 | [Agent skill](docs/AGENT-SKILL.md) | The copy embedded in the binary, for agents to read |
 | [Comparison](docs/COMPARISON.md) | Delta Browser vs Playwright MCP vs Puppeteer MCP |
+| [Jiro integration](docs/JIRO-INTEGRATION.md) | Search with Jiro, verify with Delta Browser |
 | [FAQ](docs/FAQ.md) | Long-form answers to the common questions |
 | [Migration](docs/MIGRATION.md) | Coming from AeroBrowser 0.5 |
 | [Architecture](docs/ARCHITECTURE.md) | System design |
